@@ -1,0 +1,40 @@
+name: mateito
+description: Finanzas personales para Peru. Lee los correos de tu banco y arma tu presupuesto solo.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  # withValues, CardThemeData y los Notifier de Riverpod 2.5 piden Flutter
+  # 3.27 o mas nuevo.
+  flutter: ">=3.27.0"
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Estado
+  flutter_riverpod: ^2.5.1
+
+  # Base de datos local (sin codegen: SQL a mano, nada de build_runner)
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  shared_preferences: ^2.3.2
+
+  # Gmail
+  google_sign_in: ^6.2.2
+  http: ^1.2.2
+
+  # Utilidades
+  intl: ^0.20.3
+  crypto: ^3.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

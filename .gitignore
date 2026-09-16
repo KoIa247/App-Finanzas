@@ -1,0 +1,23 @@
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+.idea/
+*.iml
+.vscode/
+
+# Generados por `flutter create .`
+android/
+ios/
+web/
+windows/
+macos/
+linux/
+
+# Nunca subas esto
+**/google-services.json
+**/GoogleService-Info.plist
+*.keystore
+*.jks
