@@ -79,7 +79,14 @@ class Caparazon extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 12,
-        title: Text(seccion.titulo, overflow: TextOverflow.fade, softWrap: false),
+        // El titulo se encoge antes que cortarse: con el segmentado de moneda
+        // y el mes al lado, "Presupuesto" no entra a tamanio completo y
+        // quedaba en "Presupues".
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(seccion.titulo, maxLines: 1, softWrap: false),
+        ),
         // El ojo no va aqui: en el prototipo cada seccion tiene el suyo, al
         // lado de las cifras que tapa. Uno global en la barra ademas no
         // entraba junto al segmentado y al mes.
@@ -198,7 +205,7 @@ class _Menu extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Finanzas', style: context.texto.titleMedium),
+                        Text('Leep', style: context.texto.titleMedium),
                         Text(
                           auth.conectado ? auth.correo : 'Sin conectar',
                           style: context.texto.bodySmall,

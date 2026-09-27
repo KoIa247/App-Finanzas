@@ -6,8 +6,6 @@ import '../../core/fechas.dart';
 import '../../core/formato.dart';
 import '../../core/texto.dart';
 import '../../core/tema.dart';
-import '../../data/repos/dao.dart';
-import '../../domain/enums.dart';
 import '../../domain/finanzas.dart';
 import '../../providers.dart';
 import '../../widgets/async.dart';
@@ -20,22 +18,10 @@ class PantallaIngresos extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final periodo = ref.watch(periodoProvider);
     final plantillas = ref.watch(plantillasProvider);
 
-    final distribucion = ref.watch(FutureProvider((ref) {
-      ref.watch(revisionProvider);
-      return ref
-          .watch(repositorioProvider)
-          .distribucionIngresos(periodo, ref.watch(monedaProvider));
-    }));
-
-    final registrados = ref.watch(FutureProvider((ref) {
-      ref.watch(revisionProvider);
-      return ref.watch(daoProvider).movimientos(
-            FiltroMovimientos(periodo: periodo, tipo: TipoMovimiento.ingreso),
-          );
-    }));
+    final distribucion = ref.watch(distribucionIngresosProvider);
+    final registrados = ref.watch(ingresosDelMesProvider);
 
     return RefreshIndicator(
       onRefresh: () async => ref.read(revisionProvider.notifier).refrescar(),

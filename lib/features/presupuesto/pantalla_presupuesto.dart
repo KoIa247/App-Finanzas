@@ -96,7 +96,12 @@ class _Contenido extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                for (final a in lista) _FilaAvance(a),
+                for (final a in lista)
+                  _FilaAvance(
+                    a,
+                    moneda: ref.watch(monedaProvider),
+                    tapado: ref.watch(privacidadProvider),
+                  ),
               ],
             ),
           ),
@@ -141,51 +146,84 @@ class _Contenido extends ConsumerWidget {
 }
 
 class _FilaAvance extends StatelessWidget {
-  const _FilaAvance(this.a);
+  const _FilaAvance(this.a, {required this.moneda, this.tapado = false});
 
   final AvancePresupuesto a;
+  final String moneda;
+  final bool tapado;
 
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
     final color = Tokens.desdeHex(a.color);
 
+    String monto(num v) => plataQuiza(v, moneda: moneda, tapado: tapado);
+
+    // El estado va debajo del nombre y no debajo de la barra: es lo que se
+    // viene a leer, y en el prototipo manda sobre la cifra exacta.
+    final estado = a.excedido
+        ? 'Te pasaste por ${monto(-a.disponible)}'
+        : 'Te quedan ${monto(a.disponible)}';
+    final colorEstado = a.excedido
+        ? t.critico
+        : (a.porcentaje > 0.85 ? t.aviso : t.apagado);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (a.icono.isNotEmpty) ...[
-                Text(a.icono, style: const TextStyle(fontSize: 15)),
-                const SizedBox(width: 8),
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    // Insignias circulares al 18 % de su color, como el pliego.
+                    color: color.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(a.icono, style: const TextStyle(fontSize: 15)),
+                ),
+                const SizedBox(width: 11),
               ],
               Expanded(
-                child: Text(a.etiqueta,
-                    style: context.texto.bodyMedium?.copyWith(color: t.tinta),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      a.etiqueta,
+                      style: context.texto.titleSmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      estado,
+                      style: context.texto.bodySmall
+                          ?.copyWith(color: colorEstado),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 10),
+              // Solo el limite. El prototipo no pone el par
+              // gastado/presupuestado en la fila: lo gastado ya lo dice la
+              // barra, y meterlo aqui dejaba el estado cortado a la mitad de
+              // un monto.
               Text(
-                '${plata(a.gastado)} / ${plata(a.presupuestado)}',
+                monto(a.presupuestado),
                 style: context.texto.bodySmall,
               ),
             ],
           ),
-          const SizedBox(height: 7),
+          const SizedBox(height: 9),
           BarraAvance(valor: a.porcentaje, color: color),
-          const SizedBox(height: 5),
-          Text(
-            a.excedido
-                ? 'Te pasaste por ${plata(-a.disponible)}'
-                : 'Te quedan ${plata(a.disponible)} · ${porcentaje(a.porcentaje)}',
-            style: context.texto.bodySmall?.copyWith(
-              color: a.excedido
-                  ? t.critico
-                  : (a.porcentaje > 0.85 ? t.aviso : null),
-            ),
-          ),
         ],
       ),
     );
@@ -199,12 +237,7 @@ class _SinPresupuesto extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final futuro = ref.watch(FutureProvider((ref) {
-      ref.watch(revisionProvider);
-      return ref
-          .watch(repositorioProvider)
-          .gastoSinPresupuesto(periodo, ref.watch(monedaProvider));
-    }));
+    final futuro = ref.watch(gastoSinPresupuestoProvider);
 
     return futuro.vista(
       (lista) {

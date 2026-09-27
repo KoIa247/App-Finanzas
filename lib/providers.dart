@@ -12,6 +12,7 @@ import '../data/repos/dao.dart';
 import '../data/repos/repositorio.dart';
 import '../data/repos/vistas.dart';
 import '../domain/catalogo.dart';
+import '../domain/enums.dart';
 import '../domain/finanzas.dart';
 import '../domain/movimiento.dart';
 
@@ -221,6 +222,41 @@ final presupuestoProvider =
       .avancesPresupuesto(
         ref.watch(periodoProvider),
         ref.watch(monedaProvider),
+      );
+});
+
+/// Las categorias en las que gastaste sin haberles puesto limite.
+///
+/// Estos tres vivian creados dentro del build de su pantalla. Un
+/// FutureProvider construido ahi nace de nuevo en cada reconstruccion, asi
+/// que nunca terminaba de cargar: la pantalla se quedaba con la ruedita
+/// girando para siempre.
+final gastoSinPresupuestoProvider =
+    FutureProvider<List<CorteCategoria>>((ref) {
+  ref.watch(revisionProvider);
+  return ref.watch(repositorioProvider).gastoSinPresupuesto(
+        ref.watch(periodoProvider),
+        ref.watch(monedaProvider),
+      );
+});
+
+final distribucionIngresosProvider =
+    FutureProvider<DistribucionIngreso>((ref) {
+  ref.watch(revisionProvider);
+  return ref.watch(repositorioProvider).distribucionIngresos(
+        ref.watch(periodoProvider),
+        ref.watch(monedaProvider),
+      );
+});
+
+final ingresosDelMesProvider = FutureProvider<List<Movimiento>>((ref) {
+  ref.watch(revisionProvider);
+  return ref.watch(daoProvider).movimientos(
+        FiltroMovimientos(
+          periodo: ref.watch(periodoProvider),
+          moneda: ref.watch(monedaProvider),
+          tipo: TipoMovimiento.ingreso,
+        ),
       );
 });
 

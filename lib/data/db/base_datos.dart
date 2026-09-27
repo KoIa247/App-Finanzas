@@ -17,7 +17,7 @@ class BaseDatos {
 
   static final BaseDatos instancia = BaseDatos._();
 
-  static const int _version = 3;
+  static const int _version = 4;
 
   Database? _db;
 
@@ -59,6 +59,7 @@ class BaseDatos {
   Future<void> _migrar(Database d, int desde, int hasta) async {
     if (desde < 2) await _v2MonedaEnPresupuesto(d);
     if (desde < 3) await _v3ColoresDeLeep(d);
+    if (desde < 4) await _v4OrdenDeAlimentacion(d);
   }
 
   /// v3: las categorias pasan a los colores de Leep.
@@ -103,16 +104,25 @@ class BaseDatos {
         where: 'subcategoria = ? AND color = ?',
         whereArgs: ['Cafeteria', '#9E4420']);
 
-    // El color y el icono de una categoria salen de su primera subcategoria
-    // por orden. En Alimentacion esa era Delivery, asi que la categoria entera
-    // se pintaba con su tono claro en vez del suyo. El plato va primero.
+    await b.commit(noResult: true);
+  }
+
+  /// v4: Restaurantes pasa antes que Delivery.
+  ///
+  /// El color y el icono de una categoria salen de su primera subcategoria por
+  /// orden. En Alimentacion esa era Delivery, asi que la categoria entera se
+  /// pintaba con su tono claro y su moto en vez del plato.
+  ///
+  /// Va en su propio salto y no dentro del v3 porque el v3 ya salio: sumarle
+  /// cosas despues no le sirve a quien ya lo corrio.
+  Future<void> _v4OrdenDeAlimentacion(Database d) async {
+    final b = d.batch();
     b.update('categorias', {'orden': 11},
         where: 'categoria = ? AND subcategoria = ?',
         whereArgs: ['Alimentacion', 'Delivery']);
     b.update('categorias', {'orden': 10},
         where: 'categoria = ? AND subcategoria = ?',
         whereArgs: ['Alimentacion', 'Restaurantes']);
-
     await b.commit(noResult: true);
   }
 

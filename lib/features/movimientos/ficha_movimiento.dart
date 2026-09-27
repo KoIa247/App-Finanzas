@@ -29,6 +29,21 @@ class FichaMovimiento extends ConsumerWidget {
     final t = context.tokens;
     final categorias = ref.watch(categoriasProvider).valueOrNull ?? const [];
     final cat = _buscar(categorias, m);
+    final tapado = ref.watch(privacidadProvider);
+
+    // El prototipo firma cada fila con el banco y los ultimos cuatro: con dos
+    // tarjetas del mismo banco, el nombre del comercio solo no alcanza para
+    // saber con cual pagaste.
+    final cuentas = ref.watch(cuentasProvider).valueOrNull ?? const [];
+    final cuenta = m.cuentaId.isEmpty
+        ? null
+        : cuentas.where((c) => c.id == m.cuentaId).firstOrNull;
+    final banco = m.banco.isNotEmpty ? m.banco : (cuenta?.banco ?? '');
+    final ultimos4 = cuenta?.ultimos4 ?? '';
+    final firma = [
+      if (banco.isNotEmpty) banco,
+      if (ultimos4.isNotEmpty) '····$ultimos4',
+    ].join(' ');
 
     final color = Tokens.desdeHex(cat?.color ?? '#94A3B8');
     final esIngreso = m.tipo == TipoMovimiento.ingreso ||
@@ -77,7 +92,9 @@ class FichaMovimiento extends ConsumerWidget {
                         m.subcategoria
                       else if (m.categoria.isNotEmpty)
                         m.categoria,
-                      if (m.medioPago.isNotEmpty)
+                      if (firma.isNotEmpty)
+                        firma
+                      else if (m.medioPago.isNotEmpty)
                         MedioPago.etiqueta(m.medioPago),
                     ].join(' · '),
                     style: context.texto.bodySmall,
@@ -92,17 +109,21 @@ class FichaMovimiento extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${esIngreso ? '+' : (esNeutro ? '' : '-')}'
-                  '${plata(m.importe, moneda: m.moneda)}',
+                  '${tapado || esNeutro ? '' : (esIngreso ? '+' : '-')}'
+                  '${plataQuiza(m.importe, moneda: m.moneda, tapado: tapado)}',
                   style: context.texto.titleSmall?.copyWith(
                     color: esIngreso
                         ? t.bueno
                         : (esNeutro ? t.apagado : t.tinta),
                   ),
                 ),
+                // El equivalente en soles es referencia, no total: solo se
+                // muestra en la moneda que no es la del libro.
                 if (m.moneda != 'PEN')
-                  Text(plata(m.importePen),
-                      style: context.texto.bodySmall),
+                  Text(
+                    plataQuiza(m.importePen, tapado: tapado),
+                    style: context.texto.bodySmall,
+                  ),
               ],
             ),
           ],

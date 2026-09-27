@@ -282,7 +282,15 @@ class Repositorio {
     );
     final categorias = await dao.categorias();
 
-    final estilo = {for (final c in categorias) c.categoria: c};
+    // La primera subcategoria por orden es la que le presta cara a la
+    // categoria. Con un mapa por comprension ganaba la ultima, asi que
+    // Vivienda salia con la caja de herramientas de Mantenimiento y
+    // Transporte con su llave inglesa. El Resumen ya tomaba la primera: esto
+    // lo deja igual en las dos pantallas.
+    final estilo = <String, Categoria>{};
+    for (final c in categorias) {
+      estilo.putIfAbsent(c.categoria, () => c);
+    }
 
     // El gasto se acumula por categoria y tambien por categoria+subcategoria,
     // porque una linea de presupuesto puede apuntar a cualquiera de las dos.
