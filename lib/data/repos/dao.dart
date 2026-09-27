@@ -232,7 +232,9 @@ class Dao {
     final d = await _db;
     final r = await d.rawQuery(
       'SELECT DISTINCT periodo FROM movimientos '
-      'WHERE periodo != '' ORDER BY periodo DESC',
+      // Comillas dobles a proposito: en comillas simples el '' de SQL cierra
+      // la cadena de Dart y la condicion se queda sin operando.
+      "WHERE periodo != '' ORDER BY periodo DESC",
     );
     final lista = r.map((f) => f['periodo'] as String).toList();
     final actual = periodoActual();
