@@ -17,7 +17,7 @@ class BaseDatos {
 
   static final BaseDatos instancia = BaseDatos._();
 
-  static const int _version = 4;
+  static const int _version = 5;
 
   Database? _db;
 
@@ -60,6 +60,7 @@ class BaseDatos {
     if (desde < 2) await _v2MonedaEnPresupuesto(d);
     if (desde < 3) await _v3ColoresDeLeep(d);
     if (desde < 4) await _v4OrdenDeAlimentacion(d);
+    if (desde < 5) await _v5IngresosDeLeep(d);
   }
 
   /// v3: las categorias pasan a los colores de Leep.
@@ -104,6 +105,38 @@ class BaseDatos {
         where: 'subcategoria = ? AND color = ?',
         whereArgs: ['Cafeteria', '#9E4420']);
 
+    await b.commit(noResult: true);
+  }
+
+  /// v5: las subcategorias de ingreso que el registro manual necesita.
+  ///
+  /// El prototipo ofrece diez atajos de ingreso y la semilla solo cubria la
+  /// mitad. Se agregan las que faltan sin tocar las que ya estaban: son parte
+  /// de la clave de los movimientos ya guardados.
+  Future<void> _v5IngresosDeLeep(Database d) async {
+    const nuevas = <List<Object>>[
+      ['Quincena', '\u{1f4b5}', '#1E5A37', 108],
+      ['Dividendos', '\u{1f4b9}', '#0A6360', 109],
+      ['Intereses', '\u{1f3e6}', '#0A6360', 110],
+      ['Alquiler cobrado', '\u{1f3e0}', '#3FB8AE', 111],
+      ['Trabajo independiente', '\u{1f4bc}', '#C87A3E', 112],
+    ];
+    final b = d.batch();
+    for (final n in nuevas) {
+      b.insert(
+        'categorias',
+        {
+          'categoria': 'Ingresos',
+          'subcategoria': n[0],
+          'tipo_aplicable': 'INGRESO',
+          'icono': n[1],
+          'color': n[2],
+          'activa': 1,
+          'orden': n[3],
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
     await b.commit(noResult: true);
   }
 

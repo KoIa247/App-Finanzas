@@ -100,10 +100,12 @@ final temaProvider = NotifierProvider<TemaNotifier, ThemeMode>(TemaNotifier.new)
 class TemaNotifier extends Notifier<ThemeMode> {
   static const _clave = 'tema';
 
+  /// Oscuro de fabrica, como el prototipo, que arranca en `tema: 'oscuro'`.
+  /// Quien prefiera otra cosa la elige en el cajon y se le respeta.
   @override
   ThemeMode build() {
     _cargar();
-    return ThemeMode.system;
+    return ThemeMode.dark;
   }
 
   Future<void> _cargar() async {
@@ -112,7 +114,7 @@ class TemaNotifier extends Notifier<ThemeMode> {
     if (v == null) return;
     state = ThemeMode.values.firstWhere(
       (m) => m.name == v,
-      orElse: () => ThemeMode.system,
+      orElse: () => ThemeMode.dark,
     );
   }
 

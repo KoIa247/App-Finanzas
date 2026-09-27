@@ -19,7 +19,7 @@ de ese codigo, que lleva meses probado contra correos reales del BCP.
 | **Clasifica solo** | 70 reglas de fabrica con comercios peruanos reales. Lo que corriges se vuelve regla. |
 | **Detecta suscripciones** | Cargos que se repiten cada mes con el mismo monto y cerca del mismo dia. |
 | **Presupuesto por categoria** | Con aviso cuando te acercas al limite. |
-| **Ingresos del regimen peruano** | Quincena, fin de mes, gratificacion, CTS, utilidades. |
+| **Ingresos del regimen peruano** | Sueldo, quincena, gratificacion, CTS y el resto, a un toque desde el registro manual. |
 | **Patrimonio neto** | Liquidez, deuda e inversiones, en soles y dolares. |
 
 ### Lo que es especificamente de aca

@@ -12,6 +12,7 @@ import '../../widgets/comunes.dart';
 import '../../widgets/graficos.dart';
 import '../movimientos/ficha_movimiento.dart';
 import '../shell/caparazon.dart';
+import '../shell/registro_manual.dart';
 
 class PantallaDashboard extends ConsumerWidget {
   const PantallaDashboard({super.key});
@@ -90,7 +91,7 @@ class _Contenido extends ConsumerWidget {
                 'anotado con el monto de siempre.',
             accion: FilledButton.tonal(
               onPressed: () =>
-                  ref.read(seccionProvider.notifier).ir(Seccion.ingresos),
+                  abrirRegistroManual(context, ref, ingreso: true),
               child: const Text('Registrar ingreso'),
             ),
           ),

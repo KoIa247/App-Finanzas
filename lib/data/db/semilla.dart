@@ -53,6 +53,14 @@ const List<Categoria> categoriasSemilla = [
   Categoria(categoria: 'Ingresos', subcategoria: 'Reembolsos', tipoAplicable: 'INGRESO', icono: '↩', color: '#86C79A', orden: 105),
   Categoria(categoria: 'Ingresos', subcategoria: 'Transferencias recibidas', tipoAplicable: 'INGRESO', icono: '📥', color: '#86C79A', orden: 106),
   Categoria(categoria: 'Ingresos', subcategoria: 'Otros', tipoAplicable: 'INGRESO', icono: '➕', color: '#86C79A', orden: 107),
+  // Las que el prototipo pone como atajo de registro manual y la semilla no
+  // traia. Sin tildes, como el resto del catalogo: la subcategoria es parte
+  // de la clave y los movimientos ya guardados escriben asi.
+  Categoria(categoria: 'Ingresos', subcategoria: 'Quincena', tipoAplicable: 'INGRESO', icono: '💵', color: '#1E5A37', orden: 108),
+  Categoria(categoria: 'Ingresos', subcategoria: 'Dividendos', tipoAplicable: 'INGRESO', icono: '💹', color: '#0A6360', orden: 109),
+  Categoria(categoria: 'Ingresos', subcategoria: 'Intereses', tipoAplicable: 'INGRESO', icono: '🏦', color: '#0A6360', orden: 110),
+  Categoria(categoria: 'Ingresos', subcategoria: 'Alquiler cobrado', tipoAplicable: 'INGRESO', icono: '🏠', color: '#3FB8AE', orden: 111),
+  Categoria(categoria: 'Ingresos', subcategoria: 'Trabajo independiente', tipoAplicable: 'INGRESO', icono: '💼', color: '#C87A3E', orden: 112),
   Categoria(categoria: 'Inversiones', subcategoria: 'Aportes', tipoAplicable: 'NEUTRO', icono: '📈', color: '#0E807C', orden: 110),
   Categoria(categoria: 'Inversiones', subcategoria: 'Retiros', tipoAplicable: 'NEUTRO', icono: '📉', color: '#0E807C', orden: 111),
   Categoria(categoria: 'Movimientos internos', subcategoria: 'Transferencia entre cuentas', tipoAplicable: 'NEUTRO', icono: '🔁', color: '#A19786', orden: 120),

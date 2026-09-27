@@ -7,12 +7,11 @@ import '../../providers.dart';
 import '../ajustes/pantalla_ajustes.dart';
 import '../cuentas/pantalla_cuentas.dart';
 import '../dashboard/pantalla_dashboard.dart';
-import '../ingresos/pantalla_ingresos.dart';
 import '../inversiones/pantalla_inversiones.dart';
 import '../movimientos/pantalla_movimientos.dart';
 import '../presupuesto/pantalla_presupuesto.dart';
 import '../revision/pantalla_revision.dart';
-import 'gasto_rapido.dart';
+import 'registro_manual.dart';
 
 /// Las secciones de la app. El prototipo tiene ocho; en un telefono solo caben
 /// cinco en la barra inferior, asi que las tres restantes viven en "Mas".
@@ -20,7 +19,6 @@ enum Seccion {
   dashboard('Resumen', Icons.dashboard_outlined, Icons.dashboard),
   movimientos('Movimientos', Icons.receipt_long_outlined, Icons.receipt_long),
   presupuesto('Presupuesto', Icons.pie_chart_outline, Icons.pie_chart),
-  ingresos('Ingresos', Icons.savings_outlined, Icons.savings),
   revision('Revisar', Icons.rule_outlined, Icons.rule),
   cuentas('Cuentas', Icons.account_balance_outlined, Icons.account_balance),
   inversiones('Inversiones', Icons.trending_up_outlined, Icons.trending_up),
@@ -36,7 +34,6 @@ enum Seccion {
         Seccion.dashboard => const PantallaDashboard(),
         Seccion.movimientos => const PantallaMovimientos(),
         Seccion.presupuesto => const PantallaPresupuesto(),
-        Seccion.ingresos => const PantallaIngresos(),
         Seccion.revision => const PantallaRevision(),
         Seccion.cuentas => const PantallaCuentas(),
         Seccion.inversiones => const PantallaInversiones(),
@@ -112,7 +109,7 @@ class Caparazon extends ConsumerWidget {
       floatingActionButton: seccion == Seccion.dashboard ||
               seccion == Seccion.movimientos
           ? FloatingActionButton.extended(
-              onPressed: () => abrirGastoRapido(context, ref),
+              onPressed: () => abrirRegistroManual(context, ref),
               icon: const Icon(Icons.add),
               label: const Text('Gasto'),
               backgroundColor: t.marca,
