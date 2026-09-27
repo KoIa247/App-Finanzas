@@ -66,6 +66,20 @@ class PeriodoNotifier extends Notifier<String> {
   void cambiar(String periodo) => state = periodo;
 }
 
+/// El libro que se esta mirando. Como el periodo, es global: cada moneda
+/// lleva su propia contabilidad y la app siempre muestra una sola.
+final monedaProvider =
+    NotifierProvider<MonedaNotifier, String>(MonedaNotifier.new);
+
+class MonedaNotifier extends Notifier<String> {
+  @override
+  String build() => 'PEN';
+
+  void cambiar(String moneda) => state = moneda;
+
+  void alternar() => state = state == 'PEN' ? 'USD' : 'PEN';
+}
+
 final temaProvider = NotifierProvider<TemaNotifier, ThemeMode>(TemaNotifier.new);
 
 class TemaNotifier extends Notifier<ThemeMode> {
@@ -142,7 +156,7 @@ final dashboardProvider = FutureProvider<DatosDashboard>((ref) {
   ref.watch(revisionProvider);
   return ref
       .watch(repositorioProvider)
-      .dashboard(ref.watch(periodoProvider));
+      .dashboard(ref.watch(periodoProvider), ref.watch(monedaProvider));
 });
 
 final cuentasProvider = FutureProvider<List<Cuenta>>((ref) {
@@ -190,7 +204,10 @@ final presupuestoProvider =
   ref.watch(revisionProvider);
   return ref
       .watch(repositorioProvider)
-      .avancesPresupuesto(ref.watch(periodoProvider));
+      .avancesPresupuesto(
+        ref.watch(periodoProvider),
+        ref.watch(monedaProvider),
+      );
 });
 
 final posicionesProvider = FutureProvider<List<PosicionInversion>>((ref) {

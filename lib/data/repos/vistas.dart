@@ -134,6 +134,7 @@ class PosicionConsolidada {
 class DatosDashboard {
   const DatosDashboard({
     required this.periodo,
+    required this.moneda,
     required this.ingresos,
     required this.gastos,
     required this.presupuestado,
@@ -150,6 +151,10 @@ class DatosDashboard {
   });
 
   final String periodo;
+
+  /// De que libro son estas cifras. No hay un total que junte los dos.
+  final String moneda;
+
   final double ingresos;
   final double gastos;
   final double presupuestado;

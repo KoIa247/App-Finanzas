@@ -31,8 +31,11 @@ de ese codigo, que lleva meses probado contra correos reales del BCP.
 - **Yape y Plin.** Un Plin viaja por el canal de la tarjeta de debito, pero no
   es una compra: es plata que le mandas a una persona. Se registra aparte para
   que no infle el consumo de tu tarjeta.
-- **Soles y dolares.** Todo se consolida en soles con el tipo de cambio del
-  dia, que la app busca sola.
+- **Dos libros, uno por moneda.** Soles y dolares llevan cada uno sus
+  movimientos y su presupuesto, y nada se convierte para sumarse: un cargo de
+  $20 se queda en $20 y no aparece como S/ 75 en el total del mes. Arriba se
+  cambia de libro. El tipo de cambio sigue ahi, pero solo para mostrar
+  equivalencias y para el patrimonio, no para armar totales.
 - **"Este dinero no es mio".** Para la cuenta del negocio de un familiar que tu
   operas: el banco te manda el correo porque tu haces la operacion, pero esa
   plata nunca fue tuya. Esos correos no se registran.
@@ -45,7 +48,7 @@ de ese codigo, que lleva meses probado contra correos reales del BCP.
 ## Como correrlo
 
 Hace falta **Flutter 3.27 o mas nuevo**. Verificado contra Flutter 3.47.3 y
-Dart 3.13.3: `flutter analyze` sin observaciones, **67 pruebas en verde** y APK
+Dart 3.13.3: `flutter analyze` sin observaciones, **75 pruebas en verde** y APK
 de release compilado (55.5 MB, arm64-v8a + armeabi-v7a + x86_64).
 
 Las carpetas `android/` e `ios/` estan en `.gitignore` porque las genera la

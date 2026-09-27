@@ -17,7 +17,7 @@ class BaseDatos {
 
   static final BaseDatos instancia = BaseDatos._();
 
-  static const int _version = 1;
+  static const int _version = 2;
 
   Database? _db;
 
@@ -54,10 +54,47 @@ class BaseDatos {
     await File(rutaVieja).rename(rutaNueva);
   }
 
+  /// Cada salto va aqui con su propio if, nunca un borrar y recrear: la base
+  /// del usuario es su historial y no se puede perder.
   Future<void> _migrar(Database d, int desde, int hasta) async {
-    // Primera version: todavia no hay migraciones. Cuando el esquema cambie,
-    // cada salto va aqui con su propio if, nunca un borrar y recrear: la base
-    // del usuario es su historial y no se puede perder.
+    if (desde < 2) await _v2MonedaEnPresupuesto(d);
+  }
+
+  /// v2: la moneda entra en la clave del presupuesto.
+  ///
+  /// Cada moneda lleva su propio presupuesto, asi que la fila ya no se
+  /// identifica por periodo mas categoria: hacen falta las dos cosas y la
+  /// moneda. SQLite no sabe cambiar una clave primaria, asi que toca
+  /// reconstruir la tabla y copiar.
+  ///
+  /// Las filas que ya existian se quedan donde estan: nacieron cuando todo se
+  /// consolidaba a soles, asi que son presupuesto en soles. La columna ya
+  /// traia 'PEN' por defecto, pero se normaliza igual por si alguna quedo
+  /// vacia o en nulo.
+  Future<void> _v2MonedaEnPresupuesto(Database d) async {
+    await d.transaction((tx) async {
+      await tx.execute('''
+        CREATE TABLE presupuesto_v2 (
+          periodo      TEXT NOT NULL,
+          categoria    TEXT NOT NULL,
+          subcategoria TEXT NOT NULL DEFAULT '',
+          moneda       TEXT NOT NULL DEFAULT 'PEN',
+          monto        REAL DEFAULT 0,
+          notas        TEXT DEFAULT '',
+          PRIMARY KEY (periodo, categoria, subcategoria, moneda)
+        )
+      ''');
+      await tx.execute('''
+        INSERT OR IGNORE INTO presupuesto_v2
+          (periodo, categoria, subcategoria, moneda, monto, notas)
+        SELECT periodo, categoria, subcategoria,
+               CASE WHEN moneda IS NULL OR moneda = '' THEN 'PEN' ELSE moneda END,
+               monto, notas
+        FROM presupuesto
+      ''');
+      await tx.execute('DROP TABLE presupuesto');
+      await tx.execute('ALTER TABLE presupuesto_v2 RENAME TO presupuesto');
+    });
   }
 
   Future<void> _crearEsquema(Database d) async {
@@ -175,10 +212,10 @@ class BaseDatos {
         periodo      TEXT NOT NULL,
         categoria    TEXT NOT NULL,
         subcategoria TEXT NOT NULL DEFAULT '',
-        moneda       TEXT DEFAULT 'PEN',
+        moneda       TEXT NOT NULL DEFAULT 'PEN',
         monto        REAL DEFAULT 0,
         notas        TEXT DEFAULT '',
-        PRIMARY KEY (periodo, categoria, subcategoria)
+        PRIMARY KEY (periodo, categoria, subcategoria, moneda)
       )
     ''');
 

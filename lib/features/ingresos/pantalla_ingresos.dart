@@ -25,7 +25,9 @@ class PantallaIngresos extends ConsumerWidget {
 
     final distribucion = ref.watch(FutureProvider((ref) {
       ref.watch(revisionProvider);
-      return ref.watch(repositorioProvider).distribucionIngresos(periodo);
+      return ref
+          .watch(repositorioProvider)
+          .distribucionIngresos(periodo, ref.watch(monedaProvider));
     }));
 
     final registrados = ref.watch(FutureProvider((ref) {
@@ -69,22 +71,22 @@ class PantallaIngresos extends ConsumerWidget {
                 RejillaFichas(fichas: [
                   Ficha(
                     etiqueta: 'Ingresos del mes',
-                    valor: plata(d.ingresos),
+                    valor: plata(d.ingresos, moneda: ref.watch(monedaProvider)),
                     color: context.tokens.bueno,
                   ),
                   Ficha(
                     etiqueta: 'Se fue en gastos',
-                    valor: plata(d.gastos),
+                    valor: plata(d.gastos, moneda: ref.watch(monedaProvider)),
                     sub: porcentaje(d.pctGasto),
                   ),
                   Ficha(
                     etiqueta: 'A inversion',
-                    valor: plata(d.inversion),
+                    valor: plata(d.inversion, moneda: ref.watch(monedaProvider)),
                     sub: porcentaje(d.pctInversion),
                   ),
                   Ficha(
                     etiqueta: 'Quedo como ahorro',
-                    valor: plata(d.ahorro),
+                    valor: plata(d.ahorro, moneda: ref.watch(monedaProvider)),
                     sub: porcentaje(d.pctAhorro),
                     color: d.ahorro >= 0
                         ? context.tokens.bueno

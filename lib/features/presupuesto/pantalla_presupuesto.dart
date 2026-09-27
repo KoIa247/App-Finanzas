@@ -67,11 +67,17 @@ class _Contenido extends ConsumerWidget {
           )
         else ...[
           RejillaFichas(fichas: [
-            Ficha(etiqueta: 'Presupuestado', valor: plata(presupuestado)),
-            Ficha(etiqueta: 'Gastado', valor: plata(gastado)),
+            Ficha(
+              etiqueta: 'Presupuestado',
+              valor: plata(presupuestado, moneda: ref.watch(monedaProvider)),
+            ),
+            Ficha(
+              etiqueta: 'Gastado',
+              valor: plata(gastado, moneda: ref.watch(monedaProvider)),
+            ),
             Ficha(
               etiqueta: 'Disponible',
-              valor: plata(disponible),
+              valor: plata(disponible, moneda: ref.watch(monedaProvider)),
               color: disponible < 0 ? t.critico : t.bueno,
             ),
             Ficha(
@@ -104,7 +110,11 @@ class _Contenido extends ConsumerWidget {
           onPressed: () async {
             final n = await ref
                 .read(daoProvider)
-                .copiarPresupuesto(periodoAnterior(periodo), periodo);
+                .copiarPresupuesto(
+                  periodoAnterior(periodo),
+                  periodo,
+                  ref.read(monedaProvider),
+                );
             ref.read(revisionProvider.notifier).refrescar();
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
@@ -191,7 +201,9 @@ class _SinPresupuesto extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final futuro = ref.watch(FutureProvider((ref) {
       ref.watch(revisionProvider);
-      return ref.watch(repositorioProvider).gastoSinPresupuesto(periodo);
+      return ref
+          .watch(repositorioProvider)
+          .gastoSinPresupuesto(periodo, ref.watch(monedaProvider));
     }));
 
     return futuro.vista(
@@ -251,7 +263,9 @@ class _EstadoEditor extends ConsumerState<_EditorPresupuesto> {
   }
 
   Future<void> _cargar() async {
-    final lineas = await ref.read(daoProvider).presupuesto(widget.periodo);
+    final lineas = await ref
+        .read(daoProvider)
+        .presupuesto(widget.periodo, ref.read(monedaProvider));
     final actuales = {for (final l in lineas) l.categoria: l.monto};
     final categorias = await ref.read(daoProvider).categorias();
 
@@ -356,6 +370,11 @@ class _EstadoEditor extends ConsumerState<_EditorPresupuesto> {
   Future<void> _guardar() async {
     setState(() => _guardando = true);
 
+    // La moneda va en cada linea, no solo en el borrado: si se quedara con el
+    // 'PEN' por defecto, guardar el presupuesto en dolares borraria el de
+    // dolares y escribiria las lineas en el libro de soles.
+    final moneda = ref.read(monedaProvider);
+
     final lineas = <LineaPresupuesto>[];
     _campos.forEach((categoria, c) {
       final v = double.tryParse(c.text.replaceAll(',', '.')) ?? 0;
@@ -363,11 +382,14 @@ class _EstadoEditor extends ConsumerState<_EditorPresupuesto> {
       lineas.add(LineaPresupuesto(
         periodo: widget.periodo,
         categoria: categoria,
+        moneda: moneda,
         monto: v,
       ));
     });
 
-    await ref.read(daoProvider).guardarPresupuesto(widget.periodo, lineas);
+    await ref
+        .read(daoProvider)
+        .guardarPresupuesto(widget.periodo, moneda, lineas);
     ref.read(revisionProvider.notifier).refrescar();
     if (!mounted) return;
     Navigator.pop(context);

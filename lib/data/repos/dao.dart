@@ -15,6 +15,7 @@ class FiltroMovimientos {
     this.periodo = '',
     this.categoria = '',
     this.cuentaId = '',
+    this.moneda = '',
     this.tipo,
     this.estado,
     this.desde = '',
@@ -27,6 +28,10 @@ class FiltroMovimientos {
   final String periodo;
   final String categoria;
   final String cuentaId;
+
+  /// Vacio trae las dos monedas. Los totales del mes siempre lo fijan: los
+  /// libros no se suman entre si.
+  final String moneda;
   final TipoMovimiento? tipo;
   final EstadoMovimiento? estado;
   final String desde;
@@ -39,6 +44,7 @@ class FiltroMovimientos {
     String? periodo,
     String? categoria,
     String? cuentaId,
+    String? moneda,
     TipoMovimiento? tipo,
     EstadoMovimiento? estado,
     bool limpiarTipo = false,
@@ -49,6 +55,7 @@ class FiltroMovimientos {
         periodo: periodo ?? this.periodo,
         categoria: categoria ?? this.categoria,
         cuentaId: cuentaId ?? this.cuentaId,
+        moneda: moneda ?? this.moneda,
         tipo: limpiarTipo ? null : (tipo ?? this.tipo),
         estado: limpiarEstado ? null : (estado ?? this.estado),
         desde: desde,
@@ -97,6 +104,10 @@ class Dao {
     if (f.categoria.isNotEmpty) {
       donde.add('categoria = ?');
       args.add(f.categoria);
+    }
+    if (f.moneda.isNotEmpty) {
+      donde.add('moneda = ?');
+      args.add(f.moneda);
     }
     if (f.cuentaId.isNotEmpty) {
       donde.add('(cuenta_id = ? OR cuenta_destino_id = ?)');
@@ -423,22 +434,37 @@ class Dao {
   //  PRESUPUESTO
   // ==========================================================================
 
-  Future<List<LineaPresupuesto>> presupuesto(String periodo) async {
+  /// El presupuesto de un mes en una moneda. Cada libro lleva el suyo, asi que
+  /// la moneda no es opcional: pedir "el presupuesto del mes" a secas ya no
+  /// quiere decir nada.
+  Future<List<LineaPresupuesto>> presupuesto(
+    String periodo,
+    String moneda,
+  ) async {
     final d = await _db;
     final filas = await d.query(
       'presupuesto',
-      where: 'periodo = ?',
-      whereArgs: [periodo],
+      where: 'periodo = ? AND moneda = ?',
+      whereArgs: [periodo, moneda],
       orderBy: 'categoria, subcategoria',
     );
     return filas.map(LineaPresupuesto.fromMap).toList();
   }
 
   Future<void> guardarPresupuesto(
-      String periodo, List<LineaPresupuesto> lineas) async {
+    String periodo,
+    String moneda,
+    List<LineaPresupuesto> lineas,
+  ) async {
     final d = await _db;
     await d.transaction((tx) async {
-      await tx.delete('presupuesto', where: 'periodo = ?', whereArgs: [periodo]);
+      // El borrado va acotado a la moneda: guardar el presupuesto en soles no
+      // puede llevarse por delante el de dolares.
+      await tx.delete(
+        'presupuesto',
+        where: 'periodo = ? AND moneda = ?',
+        whereArgs: [periodo, moneda],
+      );
       for (final l in lineas) {
         if (l.monto <= 0) continue;
         await tx.insert('presupuesto', l.toMap());
@@ -448,10 +474,14 @@ class Dao {
 
   /// Copia el presupuesto de un mes a otro. No pisa lo que ya exista en el
   /// destino: se asume que si ya escribiste algo ahi, fue a proposito.
-  Future<int> copiarPresupuesto(String desde, String hasta) async {
-    final origen = await presupuesto(desde);
+  Future<int> copiarPresupuesto(
+    String desde,
+    String hasta,
+    String moneda,
+  ) async {
+    final origen = await presupuesto(desde, moneda);
     if (origen.isEmpty) return 0;
-    final actual = await presupuesto(hasta);
+    final actual = await presupuesto(hasta, moneda);
     final yaHay = actual.map((l) => l.clave).toSet();
 
     final nuevas = origen

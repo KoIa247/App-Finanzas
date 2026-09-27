@@ -54,18 +54,18 @@ class _Contenido extends ConsumerWidget {
         RejillaFichas(fichas: [
           Ficha(
             etiqueta: 'Ingresos',
-            valor: plata(d.ingresos),
+            valor: plata(d.ingresos, moneda: d.moneda),
             sub: 'del mes',
             color: d.ingresos > 0 ? t.bueno : null,
           ),
           Ficha(
             etiqueta: 'Gastos',
-            valor: plata(d.gastos),
+            valor: plata(d.gastos, moneda: d.moneda),
             sub: '${d.porCategoria.length} categoria(s)',
           ),
           Ficha(
             etiqueta: 'Ahorro',
-            valor: plata(d.ahorro),
+            valor: plata(d.ahorro, moneda: d.moneda),
             sub: d.ingresos > 0
                 ? '${porcentaje(d.tasaAhorro)} de lo que entro'
                 : 'registra tus ingresos',
@@ -74,7 +74,7 @@ class _Contenido extends ConsumerWidget {
           Ficha(
             etiqueta: 'Presupuesto',
             valor: d.presupuestado > 0
-                ? plata(d.presupuestoDisponible)
+                ? plata(d.presupuestoDisponible, moneda: d.moneda)
                 : '—',
             sub: d.presupuestado > 0
                 ? '${porcentaje(d.consumoPresupuesto)} consumido'
@@ -363,7 +363,7 @@ class _ConsumoPorMedio extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Text(plata(m.monto), style: context.texto.titleSmall),
+                      Text(plata(m.monto, moneda: d.moneda), style: context.texto.titleSmall),
                     ],
                   ),
                   if (m.lineaCredito > 0) ...[
@@ -376,7 +376,7 @@ class _ConsumoPorMedio extends ConsumerWidget {
                     const SizedBox(height: 5),
                     Text(
                       '${porcentaje(m.usoLinea)} de tu linea de '
-                      '${plataCorta(m.lineaCredito)}',
+                      '${plataCorta(m.lineaCredito, moneda: d.moneda)}',
                       style: context.texto.bodySmall,
                     ),
                   ] else ...[
@@ -417,14 +417,14 @@ class _Suscripciones extends StatelessWidget {
             ),
           ),
           Text(
-            plata(d.costoAnualSuscripciones),
+            plata(d.costoAnualSuscripciones, moneda: d.moneda),
             style: context.texto.titleMedium,
           ),
         ],
       ),
       child: Column(
         children: [
-          for (final s in activas.take(8)) _FilaSuscripcion(s),
+          for (final s in activas.take(8)) _FilaSuscripcion(s, moneda: d.moneda),
           if (bajas.isNotEmpty) ...[
             Divider(height: 24, color: t.borde),
             Text(
@@ -432,7 +432,7 @@ class _Suscripciones extends StatelessWidget {
               style: context.texto.labelSmall,
             ),
             const SizedBox(height: 8),
-            for (final s in bajas.take(4)) _FilaSuscripcion(s, apagada: true),
+            for (final s in bajas.take(4)) _FilaSuscripcion(s, moneda: d.moneda, apagada: true),
           ],
         ],
       ),
@@ -441,9 +441,10 @@ class _Suscripciones extends StatelessWidget {
 }
 
 class _FilaSuscripcion extends StatelessWidget {
-  const _FilaSuscripcion(this.s, {this.apagada = false});
+  const _FilaSuscripcion(this.s, {required this.moneda, this.apagada = false});
 
   final Suscripcion s;
+  final String moneda;
   final bool apagada;
 
   @override
@@ -480,7 +481,7 @@ class _FilaSuscripcion extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(plata(s.importePromedio),
+              Text(plata(s.importePromedio, moneda: moneda),
                   style: context.texto.titleSmall),
               if (s.monedaOriginal != 'PEN')
                 Text(
@@ -533,7 +534,7 @@ class _ProximosPagos extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Text(plata(p.consumoDelMes),
+                  Text(plata(p.consumoDelMes, moneda: d.moneda),
                       style: context.texto.titleSmall),
                 ],
               ),

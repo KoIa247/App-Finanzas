@@ -248,6 +248,7 @@ class _Lista extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.tokens;
+    final moneda = ref.watch(monedaProvider);
 
     if (movs.isEmpty) {
       return const Vacio(
@@ -264,7 +265,7 @@ class _Lista extends ConsumerWidget {
     }
     final dias = porDia.keys.toList();
 
-    final total = movs.fold(0.0, (a, m) => a + m.gastoPen);
+    final total = movs.fold(0.0, (a, m) => a + m.gasto);
 
     return Column(
       children: [
@@ -273,7 +274,8 @@ class _Lista extends ConsumerWidget {
           color: t.superficie2,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
           child: Text(
-            '${movs.length} movimiento(s) · ${plata(total)} en gastos',
+            '${movs.length} movimiento(s) · '
+            '${plata(total, moneda: moneda)} en gastos',
             style: context.texto.bodySmall,
           ),
         ),
@@ -284,7 +286,7 @@ class _Lista extends ConsumerWidget {
             itemBuilder: (context, i) {
               final dia = dias[i];
               final delDia = porDia[dia]!;
-              final gastoDia = delDia.fold(0.0, (a, m) => a + m.gastoPen);
+              final gastoDia = delDia.fold(0.0, (a, m) => a + m.gasto);
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -300,7 +302,7 @@ class _Lista extends ConsumerWidget {
                           ),
                         ),
                         if (gastoDia > 0)
-                          Text(plata(gastoDia),
+                          Text(plata(gastoDia, moneda: moneda),
                               style: context.texto.labelSmall),
                       ],
                     ),

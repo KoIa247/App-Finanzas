@@ -86,19 +86,37 @@ class Movimiento {
 
   bool get necesitaRevision => estado == EstadoMovimiento.revisar;
 
-  /// Cuanto suma este movimiento al gasto del mes. Los neutros valen cero.
-  double get gastoPen {
+  /// El signo que le toca a este movimiento como gasto, sobre el monto que se
+  /// le pase. Los neutros valen cero.
+  double _comoGasto(double monto) {
     if (!esVivo || tipo.esNeutro) return 0;
     if (tipo == TipoMovimiento.gasto || tipo == TipoMovimiento.comision) {
-      return importePen;
+      return monto;
     }
     // Una devolucion es un gasto negativo: libera el presupuesto de su
     // categoria en vez de inflar los ingresos del mes.
-    if (tipo == TipoMovimiento.devolucion) return -importePen;
+    if (tipo == TipoMovimiento.devolucion) return -monto;
     return 0;
   }
 
-  /// Cuanto suma a los ingresos del mes.
+  /// Cuanto suma este movimiento al gasto del mes, en su propia moneda.
+  ///
+  /// Este es el que se suma. Cada moneda lleva su libro aparte y no se
+  /// convierte nada para juntarlas, asi que sumar esto solo tiene sentido
+  /// entre movimientos de la misma [moneda].
+  double get gasto => _comoGasto(importe);
+
+  /// Cuanto suma a los ingresos del mes, en su propia moneda.
+  double get ingreso =>
+      (esVivo && tipo == TipoMovimiento.ingreso) ? importe : 0;
+
+  /// El equivalente en soles del gasto.
+  ///
+  /// Sirve para mostrar una referencia cuando el usuario la pide, no para
+  /// armar totales: los libros no se mezclan. Ver [gasto].
+  double get gastoPen => _comoGasto(importePen);
+
+  /// El equivalente en soles del ingreso. Misma advertencia que [gastoPen].
   double get ingresoPen =>
       (esVivo && tipo == TipoMovimiento.ingreso) ? importePen : 0;
 

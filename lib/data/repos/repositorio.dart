@@ -24,7 +24,11 @@ class Repositorio {
   //  DASHBOARD
   // ==========================================================================
 
-  Future<DatosDashboard> dashboard(String periodo) async {
+  /// El tablero de un mes en una moneda.
+  ///
+  /// Hay un libro por moneda y no se mezclan, asi que el tablero siempre mira
+  /// uno solo: sumar soles con dolares daria un numero que no existe.
+  Future<DatosDashboard> dashboard(String periodo, String moneda) async {
     final config = await dao.config();
     final respaldoTc =
         double.tryParse(config['tc_por_defecto'] ?? '3.75') ?? 3.75;
@@ -32,17 +36,20 @@ class Repositorio {
 
     final cuentas = await dao.cuentas();
     final categorias = await dao.categorias();
-    final delMes = await dao.movimientos(FiltroMovimientos(periodo: periodo));
-    final todos = await dao.movimientos();
+    final delMes = await dao.movimientos(
+      FiltroMovimientos(periodo: periodo, moneda: moneda),
+    );
+    final todos = await dao.movimientos(FiltroMovimientos(moneda: moneda));
 
-    final ingresos = _suma(delMes, (m) => m.ingresoPen);
-    final gastos = _suma(delMes, (m) => m.gastoPen);
+    final ingresos = _suma(delMes, (m) => m.ingreso);
+    final gastos = _suma(delMes, (m) => m.gasto);
 
-    final lineas = await dao.presupuesto(periodo);
+    final lineas = await dao.presupuesto(periodo, moneda);
     final presupuestado = lineas.fold(0.0, (a, l) => a + l.monto);
 
     return DatosDashboard(
       periodo: periodo,
+      moneda: moneda,
       ingresos: redondear(ingresos),
       gastos: redondear(gastos),
       presupuestado: redondear(presupuestado),
@@ -51,7 +58,7 @@ class Repositorio {
       evolucion: _evolucion(todos, periodo, 12),
       ultimos: delMes.take(8).toList(),
       posicion: await _posicion(tc),
-      avances: await avancesPresupuesto(periodo),
+      avances: await avancesPresupuesto(periodo, moneda),
       proximosPagos: _proximosPagos(cuentas, delMes),
       suscripciones: detectarSuscripciones(
         todos,
@@ -86,7 +93,7 @@ class Repositorio {
     final totales = <String, double>{};
     final cuentas = <String, int>{};
     for (final m in movs) {
-      final g = m.gastoPen;
+      final g = m.gasto;
       if (g == 0) continue;
       final k = m.categoria.isEmpty ? 'Sin clasificar' : m.categoria;
       totales[k] = (totales[k] ?? 0) + g;
@@ -116,9 +123,9 @@ class Repositorio {
     final conteo = <String, int>{};
 
     for (final m in movs) {
-      if (m.gastoPen <= 0) continue;
+      if (m.gasto <= 0) continue;
       final k = m.cuentaId.isEmpty ? '(sin cuenta)' : m.cuentaId;
-      totales[k] = (totales[k] ?? 0) + m.gastoPen;
+      totales[k] = (totales[k] ?? 0) + m.gasto;
       conteo[k] = (conteo[k] ?? 0) + 1;
     }
 
@@ -152,8 +159,8 @@ class Repositorio {
     final gastos = <String, double>{};
     for (final m in movs) {
       final k = m.periodo;
-      ingresos[k] = (ingresos[k] ?? 0) + m.ingresoPen;
-      gastos[k] = (gastos[k] ?? 0) + m.gastoPen;
+      ingresos[k] = (ingresos[k] ?? 0) + m.ingreso;
+      gastos[k] = (gastos[k] ?? 0) + m.gasto;
     }
 
     return periodos
@@ -178,8 +185,8 @@ class Repositorio {
 
     final consumo = <String, double>{};
     for (final m in delMes) {
-      if (m.gastoPen <= 0 || m.cuentaId.isEmpty) continue;
-      consumo[m.cuentaId] = (consumo[m.cuentaId] ?? 0) + m.gastoPen;
+      if (m.gasto <= 0 || m.cuentaId.isEmpty) continue;
+      consumo[m.cuentaId] = (consumo[m.cuentaId] ?? 0) + m.gasto;
     }
 
     final out = cuentas
@@ -265,9 +272,14 @@ class Repositorio {
   //  PRESUPUESTO
   // ==========================================================================
 
-  Future<List<AvancePresupuesto>> avancesPresupuesto(String periodo) async {
-    final lineas = await dao.presupuesto(periodo);
-    final movs = await dao.movimientos(FiltroMovimientos(periodo: periodo));
+  Future<List<AvancePresupuesto>> avancesPresupuesto(
+    String periodo,
+    String moneda,
+  ) async {
+    final lineas = await dao.presupuesto(periodo, moneda);
+    final movs = await dao.movimientos(
+      FiltroMovimientos(periodo: periodo, moneda: moneda),
+    );
     final categorias = await dao.categorias();
 
     final estilo = {for (final c in categorias) c.categoria: c};
@@ -277,7 +289,7 @@ class Repositorio {
     final porCategoria = <String, double>{};
     final porSub = <String, double>{};
     for (final m in movs) {
-      final g = m.gastoPen;
+      final g = m.gasto;
       if (g == 0) continue;
       porCategoria[m.categoria] = (porCategoria[m.categoria] ?? 0) + g;
       porSub['${m.categoria}|${m.subcategoria}'] =
@@ -302,10 +314,15 @@ class Repositorio {
   }
 
   /// Las categorias en las que gastaste sin haberles puesto presupuesto.
-  Future<List<CorteCategoria>> gastoSinPresupuesto(String periodo) async {
-    final lineas = await dao.presupuesto(periodo);
+  Future<List<CorteCategoria>> gastoSinPresupuesto(
+    String periodo,
+    String moneda,
+  ) async {
+    final lineas = await dao.presupuesto(periodo, moneda);
     final conPresupuesto = lineas.map((l) => l.categoria).toSet();
-    final movs = await dao.movimientos(FiltroMovimientos(periodo: periodo));
+    final movs = await dao.movimientos(
+      FiltroMovimientos(periodo: periodo, moneda: moneda),
+    );
     final categorias = await dao.categorias();
 
     final todos = _porCategoria(movs, categorias);
@@ -318,13 +335,18 @@ class Repositorio {
   //  INGRESOS
   // ==========================================================================
 
-  Future<DistribucionIngreso> distribucionIngresos(String periodo) async {
-    final movs = await dao.movimientos(FiltroMovimientos(periodo: periodo));
-    final ingresos = _suma(movs, (m) => m.ingresoPen);
-    final gastos = _suma(movs, (m) => m.gastoPen);
+  Future<DistribucionIngreso> distribucionIngresos(
+    String periodo,
+    String moneda,
+  ) async {
+    final movs = await dao.movimientos(
+      FiltroMovimientos(periodo: periodo, moneda: moneda),
+    );
+    final ingresos = _suma(movs, (m) => m.ingreso);
+    final gastos = _suma(movs, (m) => m.gasto);
     final inversion = movs
         .where((m) => m.tipo == TipoMovimiento.aporteInversion)
-        .fold(0.0, (a, m) => a + m.importePen);
+        .fold(0.0, (a, m) => a + m.importe);
 
     return DistribucionIngreso(
       ingresos: redondear(ingresos),

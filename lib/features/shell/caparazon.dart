@@ -75,7 +75,12 @@ class Caparazon extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(seccion.titulo),
-        actions: const [_SelectorPeriodo(), _BotonSync(), SizedBox(width: 8)],
+        actions: const [
+          _SelectorMoneda(),
+          _SelectorPeriodo(),
+          _BotonSync(),
+          SizedBox(width: 8),
+        ],
       ),
       drawer: esAncho ? null : const _Menu(),
       body: Row(
@@ -245,6 +250,46 @@ class _Menu extends ConsumerWidget {
 
 /// Selector de mes. Vive en la barra superior porque casi todas las pantallas
 /// dependen de el.
+/// El cambio de libro.
+///
+/// Cada moneda lleva su propia contabilidad y nada se convierte para sumarse,
+/// asi que esto no es un filtro: es pasar de un libro al otro.
+class _SelectorMoneda extends ConsumerWidget {
+  const _SelectorMoneda();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final moneda = ref.watch(monedaProvider);
+    final t = context.tokens;
+    final esSoles = moneda == 'PEN';
+
+    return Semantics(
+      button: true,
+      label: esSoles ? 'Libro en soles' : 'Libro en dolares',
+      child: Tooltip(
+        message: esSoles ? 'Estas en soles. Toca para ver dolares.'
+            : 'Estas en dolares. Toca para ver soles.',
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radioPastilla),
+          onTap: () => ref.read(monedaProvider.notifier).alternar(),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: BoxDecoration(
+              color: t.marca.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(radioPastilla),
+            ),
+            child: Text(
+              esSoles ? 'S/' : 'US\$',
+              style: context.texto.titleSmall?.copyWith(color: t.marca),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SelectorPeriodo extends ConsumerWidget {
   const _SelectorPeriodo();
 
