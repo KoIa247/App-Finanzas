@@ -66,6 +66,20 @@ class PeriodoNotifier extends Notifier<String> {
   void cambiar(String periodo) => state = periodo;
 }
 
+/// Si los montos van tapados. El ojo de la barra superior lo enciende.
+///
+/// Es para mirar la app en un sitio con gente al lado, no para proteger nada:
+/// tapa lo que se ve, no lo que esta guardado.
+final privacidadProvider =
+    NotifierProvider<PrivacidadNotifier, bool>(PrivacidadNotifier.new);
+
+class PrivacidadNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void alternar() => state = !state;
+}
+
 /// El libro que se esta mirando. Como el periodo, es global: cada moneda
 /// lleva su propia contabilidad y la app siempre muestra una sola.
 final monedaProvider =
@@ -226,13 +240,18 @@ final filtroProvider =
 
 class FiltroNotifier extends Notifier<FiltroMovimientos> {
   @override
-  FiltroMovimientos build() =>
-      FiltroMovimientos(periodo: ref.watch(periodoProvider));
+  FiltroMovimientos build() => FiltroMovimientos(
+        periodo: ref.watch(periodoProvider),
+        moneda: ref.watch(monedaProvider),
+      );
 
   void actualizar(FiltroMovimientos f) => state = f;
 
   void limpiar() =>
-      state = FiltroMovimientos(periodo: ref.read(periodoProvider));
+      state = FiltroMovimientos(
+        periodo: ref.read(periodoProvider),
+        moneda: ref.read(monedaProvider),
+      );
 }
 
 final movimientosProvider = FutureProvider<List<Movimiento>>((ref) {

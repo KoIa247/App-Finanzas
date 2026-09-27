@@ -51,3 +51,23 @@ String porcentajeConSigno(num v, {int decimales = 1}) {
 }
 
 String numero(num v) => _compacto.format(v);
+
+/// El monto tapado, para el modo privacidad.
+///
+/// Se conserva el simbolo y el largo aproximado: la idea es que la pantalla no
+/// cambie de forma al taparla, solo que no se lea la cifra.
+String plataTapada(num v, {String moneda = 'PEN'}) {
+  final simbolo = moneda.toUpperCase() == 'USD' ? r'$ ' : 'S/ ';
+  return '$simbolo••••';
+}
+
+/// [plata], pero obedeciendo al modo privacidad.
+String plataQuiza(
+  num v, {
+  String moneda = 'PEN',
+  bool tapado = false,
+  bool conDecimales = true,
+}) =>
+    tapado
+        ? plataTapada(v, moneda: moneda)
+        : plata(v, moneda: moneda, conDecimales: conDecimales);

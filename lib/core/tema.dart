@@ -6,10 +6,11 @@ import 'package:flutter/material.dart';
 /// una app que miras todos los dias para ver malas noticias sobre tu plata
 /// agradece verse tranquila.
 ///
-/// El tema claro sale tal cual del prototipo. El oscuro no: el prototipo es
-/// solo claro, asi que esta derivado. La regla al derivarlo fue no invertir
-/// nada a ciegas, porque el verde de marca sobre negro no se lee; en oscuro el
-/// acento pasa al verde menta, que si contrasta.
+/// Los dos temas salen del prototipo, que trae los suyos completos en
+/// `[data-tema="claro"]` y `[data-tema="oscuro"]`. Los valores de aqui son
+/// esos, no una derivacion: la paleta se llama "musgo" y el pliego la fija
+/// token por token, incluido el verde de la portada, que en oscuro se
+/// ensombrece en vez de aclararse porque encima siempre va texto claro.
 class Tokens {
   const Tokens({
     required this.plano,
@@ -21,6 +22,9 @@ class Tokens {
     required this.grilla,
     required this.borde,
     required this.marca,
+    required this.marcaTinta,
+    required this.portada,
+    required this.portadaTinta,
     required this.bueno,
     required this.aviso,
     required this.serio,
@@ -37,8 +41,18 @@ class Tokens {
   final Color grilla;
   final Color borde;
 
-  /// El verde de Leep. Cambia entre temas a proposito: ver la nota de arriba.
+  /// El verde de Leep para rellenos: botones, el flotante, la insignia.
   final Color marca;
+
+  /// Lo que va encima de [marca].
+  final Color marcaTinta;
+
+  /// El verde de la portada. En oscuro se ensombrece en vez de aclararse,
+  /// porque encima siempre va texto claro.
+  final Color portada;
+
+  /// Lo que va encima de [portada].
+  final Color portadaTinta;
 
   final Color bueno;
   final Color aviso;
@@ -50,7 +64,7 @@ class Tokens {
 
   static const claro = Tokens(
     plano: Color(0xFFF5EAD8),
-    superficie: Color(0xFFF9F4ED),
+    superficie: Color(0xFFFBF5EC),
     superficie2: Color(0xFFEBDDC5),
     tinta: Color(0xFF201E1D),
     tinta2: Color(0xFF656260),
@@ -58,45 +72,49 @@ class Tokens {
     grilla: Color(0xFFDCD3C4),
     borde: Color(0x24201E1D),
     marca: Color(0xFF1E5A37),
+    marcaTinta: Color(0xFFF5EAD8),
+    portada: Color(0xFF1E5A37),
+    portadaTinta: Color(0xFFF5EAD8),
     bueno: Color(0xFF1E5A37),
-    aviso: Color(0xFFC87A3E),
+    aviso: Color(0xFF8C491A),
     serio: Color(0xFF9E4420),
     critico: Color(0xFF93122E),
+    // Las seis paletas del pliego, en su tono claro.
     serie: [
-      Color(0xFF9E4420),
-      Color(0xFF0A6360),
-      Color(0xFF22306B),
-      Color(0xFFC87A3E),
       Color(0xFF1E5A37),
-      Color(0xFFD4607A),
-      Color(0xFF3FB8AE),
-      Color(0xFFE08B5B),
+      Color(0xFF0A6360),
+      Color(0xFF9E4420),
+      Color(0xFF93122E),
+      Color(0xFF22306B),
+      Color(0xFF33383A),
     ],
   );
 
   static const oscuro = Tokens(
-    plano: Color(0xFF17191A),
-    superficie: Color(0xFF1F2223),
-    superficie2: Color(0xFF282C2D),
-    tinta: Color(0xFFF5EAD8),
-    tinta2: Color(0xFFB9B0A3),
-    apagado: Color(0xFF8A8478),
-    grilla: Color(0xFF33383A),
-    borde: Color(0x24F5EAD8),
+    plano: Color(0xFF0F1011),
+    superficie: Color(0xFF1A1B1D),
+    superficie2: Color(0xFF242628),
+    tinta: Color(0xFFF1EFEB),
+    tinta2: Color(0xFFB5B1AA),
+    apagado: Color(0xFF8A8883),
+    grilla: Color(0xFF303235),
+    borde: Color(0x24F1EFEB),
     marca: Color(0xFF86C79A),
-    bueno: Color(0xFF86C79A),
-    aviso: Color(0xFFE0A45B),
-    serio: Color(0xFFE08B5B),
-    critico: Color(0xFFE2647E),
+    marcaTinta: Color(0xFF16210F),
+    portada: Color(0xFF12391F),
+    portadaTinta: Color(0xFFF1EFEB),
+    bueno: Color(0xFF9FD4AD),
+    aviso: Color(0xFFE0A87E),
+    serio: Color(0xFFE0A87E),
+    critico: Color(0xFFE39AAC),
+    // Las mismas seis paletas, en su tono oscuro.
     serie: [
-      Color(0xFFD1734A),
-      Color(0xFF3FB8AE),
-      Color(0xFF7C8CD4),
-      Color(0xFFE0A45B),
-      Color(0xFF86C79A),
-      Color(0xFFE38BA2),
-      Color(0xFF6FD6CE),
-      Color(0xFFEFA97D),
+      Color(0xFF9FD4AD),
+      Color(0xFF7FD3CC),
+      Color(0xFFE0A87E),
+      Color(0xFFE39AAC),
+      Color(0xFF9DAEEA),
+      Color(0xFFB9C0C4),
     ],
   );
 
@@ -123,18 +141,6 @@ extension TokensDeContexto on BuildContext {
 /// el texto corrido. Van empaquetadas en assets/fonts: ver pubspec.
 const String fuenteTitular = 'Sora';
 const String fuenteTexto = 'Manrope';
-
-/// Verde de marca para superficies llenas: la portada del resumen, el boton
-/// flotante, la insignia del cajon.
-///
-/// Es el mismo en los dos temas, y por eso no sale de los tokens. Encima va
-/// texto crema, asi que no puede aclararse en oscuro como si hace `marca`:
-/// quedaria crema sobre menta y no se leeria.
-const Color verdeLleno = Color(0xFF1E5A37);
-
-/// El crema que va encima de `verdeLleno`. Blanco puro sobre este verde se ve
-/// frio al lado del resto de la paleta.
-const Color cremaSobreVerde = Color(0xFFF5EAD8);
 
 /// Radios del prototipo: contenedores de 28 a 36, controles tipo pastilla.
 /// "Nada con esquina viva."
@@ -247,7 +253,7 @@ ThemeData construirTema(Brightness brillo) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: t.marca,
-        foregroundColor: t.plano,
+        foregroundColor: t.marcaTinta,
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radioPastilla),

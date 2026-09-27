@@ -10,8 +10,8 @@ import '../../domain/finanzas.dart';
 
 /// Categorias y subcategorias de fabrica.
 const List<Categoria> categoriasSemilla = [
-  Categoria(categoria: 'Alimentacion', subcategoria: 'Delivery', tipoAplicable: 'GASTO', icono: '🛵', color: '#E08B5B', orden: 10),
-  Categoria(categoria: 'Alimentacion', subcategoria: 'Restaurantes', tipoAplicable: 'GASTO', icono: '🍽', color: '#9E4420', orden: 11),
+  Categoria(categoria: 'Alimentacion', subcategoria: 'Delivery', tipoAplicable: 'GASTO', icono: '🛵', color: '#E08B5B', orden: 11),
+  Categoria(categoria: 'Alimentacion', subcategoria: 'Restaurantes', tipoAplicable: 'GASTO', icono: '🍽', color: '#9E4420', orden: 10),
   Categoria(categoria: 'Alimentacion', subcategoria: 'Supermercado', tipoAplicable: 'GASTO', icono: '🛒', color: '#9E4420', orden: 12),
   Categoria(categoria: 'Alimentacion', subcategoria: 'Cafeteria', tipoAplicable: 'GASTO', icono: '☕', color: '#C87A3E', orden: 13),
   Categoria(categoria: 'Transporte', subcategoria: 'Taxi / Apps', tipoAplicable: 'GASTO', icono: '🚗', color: '#0A6360', orden: 20),

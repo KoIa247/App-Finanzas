@@ -43,49 +43,14 @@ class _Contenido extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.tokens;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Portada(d),
-        const SizedBox(height: 14),
 
-        RejillaFichas(fichas: [
-          Ficha(
-            etiqueta: 'Ingresos',
-            valor: plata(d.ingresos, moneda: d.moneda),
-            sub: 'del mes',
-            color: d.ingresos > 0 ? t.bueno : null,
-          ),
-          Ficha(
-            etiqueta: 'Gastos',
-            valor: plata(d.gastos, moneda: d.moneda),
-            sub: '${d.porCategoria.length} categoria(s)',
-          ),
-          Ficha(
-            etiqueta: 'Ahorro',
-            valor: plata(d.ahorro, moneda: d.moneda),
-            sub: d.ingresos > 0
-                ? '${porcentaje(d.tasaAhorro)} de lo que entro'
-                : 'registra tus ingresos',
-            color: d.ahorro >= 0 ? t.bueno : t.critico,
-          ),
-          Ficha(
-            etiqueta: 'Presupuesto',
-            valor: d.presupuestado > 0
-                ? plata(d.presupuestoDisponible, moneda: d.moneda)
-                : '—',
-            sub: d.presupuestado > 0
-                ? '${porcentaje(d.consumoPresupuesto)} consumido'
-                : 'sin definir',
-            color: d.presupuestado > 0 && d.presupuestoDisponible < 0
-                ? t.critico
-                : null,
-            alPresionar: () =>
-                ref.read(seccionProvider.notifier).ir(Seccion.presupuesto),
-          ),
-        ]),
+        const SizedBox(height: 18),
+        _EntradasYAhorro(d),
 
         if (d.pendientes > 0) ...[
           const SizedBox(height: 14),
@@ -140,7 +105,7 @@ class _Contenido extends ConsumerWidget {
         const SizedBox(height: 14),
         Bloque(
           titulo: 'Evolucion mensual',
-          nota: 'Ultimos 12 meses, en soles.',
+          nota: 'Ultimos 12 meses, en el libro que estas mirando.',
           child: BarrasEvolucion(
             meses: [
               for (final m in d.evolucion)
@@ -171,83 +136,386 @@ class _Contenido extends ConsumerWidget {
   }
 }
 
-/// El patrimonio neto, arriba de todo.
-class _Portada extends ConsumerWidget {
-  const _Portada(this.d);
+/// "Entradas y ahorro": lo que entro y lo que se esta quedando.
+///
+/// Reemplaza a las cuatro fichas sueltas que habia antes. Gastos y
+/// presupuesto ya los cuenta la portada, asi que repetirlos aqui solo sumaba
+/// ruido: quedan las dos cifras que la portada no dice.
+class _EntradasYAhorro extends ConsumerWidget {
+  const _EntradasYAhorro(this.d);
 
   final DatosDashboard d;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // El fondo de la portada es el verde de marca en los dos temas, asi que
-    // los textos van en crema directo y no en tokens: si siguieran al tema, en
-    // oscuro quedarian claros sobre un fondo que no se aclara.
-    final p = d.posicion;
+    final t = context.tokens;
+    final tapado = ref.watch(privacidadProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Entradas y ahorro',
+                style: context.texto.titleMedium?.copyWith(fontSize: 18),
+              ),
+            ),
+            InkWell(
+              borderRadius: BorderRadius.circular(radioPastilla),
+              onTap: () => ref.read(privacidadProvider.notifier).alternar(),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  tapado
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 19,
+                  color: t.apagado,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: t.superficie,
+            borderRadius: BorderRadius.circular(radioTarjeta),
+            border: Border.all(color: t.borde),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _Cifra(
+                    punto: t.bueno,
+                    etiqueta: 'ENTRO',
+                    valor: plataQuiza(
+                      d.ingresos,
+                      moneda: d.moneda,
+                      tapado: tapado,
+                    ),
+                    nota: d.ingresos > 0
+                        ? 'en el mes'
+                        : 'todavia no registras nada',
+                    color: d.ingresos > 0 ? t.bueno : null,
+                  ),
+                ),
+                VerticalDivider(width: 1, thickness: 1, color: t.borde),
+                Expanded(
+                  child: _Cifra(
+                    punto: d.ahorro >= 0 ? t.aviso : t.critico,
+                    etiqueta: d.ahorro >= 0 ? 'VAS AHORRANDO' : 'VAS EN ROJO',
+                    valor: plataQuiza(
+                      d.ahorro,
+                      moneda: d.moneda,
+                      tapado: tapado,
+                    ),
+                    nota: d.ingresos > 0
+                        ? '${porcentaje(d.tasaAhorro)} de lo que entro'
+                        : 'registra tus ingresos',
+                    color: d.ahorro >= 0 ? null : t.critico,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Una de las dos mitades de "Entradas y ahorro".
+class _Cifra extends StatelessWidget {
+  const _Cifra({
+    required this.punto,
+    required this.etiqueta,
+    required this.valor,
+    required this.nota,
+    this.color,
+  });
+
+  final Color punto;
+  final String etiqueta;
+  final String valor;
+  final String nota;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(color: punto, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  etiqueta,
+                  style: context.texto.labelSmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valor,
+              style: context.texto.headlineSmall?.copyWith(color: color),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(nota, style: context.texto.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
+/// La portada del Resumen: lo que te queda por gastar este mes.
+///
+/// En el repo esta portada mostraba el patrimonio neto. El prototipo lo baja
+/// de ahi a proposito: el patrimonio deja de ser portada y manda "te queda
+/// este mes". El patrimonio sigue existiendo, pero en Cuentas, que es donde
+/// uno lo va a buscar.
+class _Portada extends ConsumerWidget {
+  const _Portada(this.d);
+
+  final DatosDashboard d;
+
+  /// Cuantos dias quedan del mes, contando hoy.
+  ///
+  /// Si estas mirando un mes pasado quedan cero, y entonces no tiene sentido
+  /// hablar de cuanto puedes gastar al dia.
+  int get _diasQueQuedan {
+    final hoy = hoyLima();
+    if (d.periodo != hoy.substring(0, 7)) return 0;
+    final anio = int.tryParse(hoy.substring(0, 4)) ?? 2026;
+    final mes = int.tryParse(hoy.substring(5, 7)) ?? 1;
+    final dia = int.tryParse(hoy.substring(8, 10)) ?? 1;
+    return (diasDelMes(anio, mes) - dia) + 1;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.tokens;
+    final tapado = ref.watch(privacidadProvider);
+    final hayPresupuesto = d.presupuestado > 0;
+    final disponible = d.presupuestoDisponible;
+    final pasado = hayPresupuesto && disponible < 0;
+    final consumo = d.consumoPresupuesto.clamp(0.0, 1.0);
+
+    final planeado = plataQuiza(
+      d.presupuestado,
+      moneda: d.moneda,
+      tapado: tapado,
+    );
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radioTarjeta),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [verdeLleno, verdeLleno.withValues(alpha: 0.86)],
+          colors: [t.portada, t.portada.withValues(alpha: 0.86)],
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'PATRIMONIO NETO',
-            style: context.texto.labelSmall?.copyWith(
-              color: cremaSobreVerde.withValues(alpha: 0.75),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  hayPresupuesto ? 'DISPONIBLE ESTE MES' : 'GASTADO ESTE MES',
+                  style: context.texto.labelSmall
+                      ?.copyWith(color: t.portadaTinta.withValues(alpha: 0.75)),
+                ),
+              ),
+              InkWell(
+                borderRadius: BorderRadius.circular(radioPastilla),
+                onTap: () => ref.read(privacidadProvider.notifier).alternar(),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    tapado
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 20,
+                    color: t.portadaTinta.withValues(alpha: 0.75),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              p.hayFoto ? plata(p.neto) : 'Sin registrar',
-              style: context.texto.displaySmall?.copyWith(color: cremaSobreVerde),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            p.hayFoto
-                ? 'Al ${fechaCorta(p.fecha)} · '
-                    'liquidez ${plataCorta(p.liquidezPen)}'
-                    '${p.deudaPen > 0 ? ' · deuda ${plataCorta(p.deudaPen)}' : ''}'
-                    '${p.inversionesPen > 0 ? ' · inversiones ${plataCorta(p.inversionesPen)}' : ''}'
-                : 'Copia tus saldos de la app del banco para verlo aqui.',
-            style: context.texto.bodySmall?.copyWith(
-              color: cremaSobreVerde.withValues(alpha: 0.9),
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              FilledButton.tonal(
-                style: FilledButton.styleFrom(
-                  backgroundColor: cremaSobreVerde.withValues(alpha: 0.18),
-                  foregroundColor: cremaSobreVerde,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-                onPressed: () =>
-                    ref.read(seccionProvider.notifier).ir(Seccion.cuentas),
-                child: Text(p.hayFoto ? 'Actualizar' : 'Registrar posicion'),
+              plataQuiza(
+                hayPresupuesto ? disponible : d.gastos,
+                moneda: d.moneda,
+                tapado: tapado,
               ),
-              const Spacer(),
-              if (p.tipoCambio > 0)
-                Text(
-                  'USD ${p.tipoCambio.toStringAsFixed(3)}',
-                  style: context.texto.bodySmall?.copyWith(
-                    color: cremaSobreVerde.withValues(alpha: 0.75),
+              style: context.texto.displaySmall
+                  ?.copyWith(color: t.portadaTinta),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            hayPresupuesto
+                ? (pasado
+                    ? 'Te pasaste de los $planeado que planeaste gastar.'
+                    : 'de los $planeado que planeaste gastar')
+                : 'Ponle un presupuesto al mes y aca te digo cuanto te queda.',
+            style: context.texto.bodySmall?.copyWith(
+              color: t.portadaTinta.withValues(alpha: 0.86),
+              height: 1.45,
+            ),
+          ),
+          if (hayPresupuesto) ...[
+            const SizedBox(height: 14),
+            _BarraGasto(consumo: consumo, pasado: pasado),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Ya gastaste ${plataQuiza(d.gastos, moneda: d.moneda, tapado: tapado)}',
+                    style: context.texto.bodySmall?.copyWith(
+                      color: t.portadaTinta.withValues(alpha: 0.72),
+                    ),
                   ),
                 ),
+                Text(
+                  porcentaje(d.consumoPresupuesto),
+                  style: context.texto.bodySmall?.copyWith(
+                    color: t.portadaTinta.withValues(alpha: 0.72),
+                  ),
+                ),
+              ],
+            ),
+            if (!pasado && _diasQueQuedan > 0) ...[
+              const SizedBox(height: 14),
+              _RitmoDiario(
+                porDia: disponible / _diasQueQuedan,
+                moneda: d.moneda,
+                tapado: tapado,
+              ),
             ],
+          ] else ...[
+            const SizedBox(height: 14),
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(
+                backgroundColor: t.portadaTinta.withValues(alpha: 0.18),
+                foregroundColor: t.portadaTinta,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+              ),
+              onPressed: () =>
+                  ref.read(seccionProvider.notifier).ir(Seccion.presupuesto),
+              child: const Text('Poner presupuesto'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// La barra de consumo del presupuesto, dentro de la portada.
+class _BarraGasto extends StatelessWidget {
+  const _BarraGasto({required this.consumo, required this.pasado});
+
+  final double consumo;
+  final bool pasado;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radioPastilla),
+      child: LinearProgressIndicator(
+        value: consumo,
+        minHeight: 8,
+        backgroundColor: t.portadaTinta.withValues(alpha: 0.18),
+        valueColor: AlwaysStoppedAnimation(
+          pasado ? t.critico : t.portadaTinta.withValues(alpha: 0.92),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Para no pasarte, puedes gastar al dia X".
+///
+/// Es la cuenta que uno hace de cabeza a mitad de mes, hecha por la app.
+class _RitmoDiario extends StatelessWidget {
+  const _RitmoDiario({
+    required this.porDia,
+    required this.moneda,
+    required this.tapado,
+  });
+
+  final double porDia;
+  final String moneda;
+  final bool tapado;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: t.portadaTinta.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(radioCampo),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: t.portadaTinta.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(radioPastilla),
+            ),
+            child: Icon(
+              Icons.event_outlined,
+              size: 17,
+              color: t.portadaTinta.withValues(alpha: 0.9),
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Text(
+              'Para no pasarte, puedes gastar al dia',
+              style: context.texto.bodySmall?.copyWith(
+                color: t.portadaTinta.withValues(alpha: 0.86),
+                height: 1.35,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            plataQuiza(porDia, moneda: moneda, tapado: tapado),
+            style: context.texto.titleMedium?.copyWith(color: t.portadaTinta),
           ),
         ],
       ),

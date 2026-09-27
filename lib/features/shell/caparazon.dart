@@ -45,11 +45,15 @@ enum Seccion {
 }
 
 /// Las que van en la barra inferior del telefono.
+///
+/// El prototipo baja de ocho secciones planas a cinco en la barra, y manda el
+/// resto a donde nacen: Revisar se entra desde el aviso del Resumen, no desde
+/// una pestania. Falta Metas, que todavia no existe.
 const List<Seccion> _barra = [
   Seccion.dashboard,
   Seccion.movimientos,
   Seccion.presupuesto,
-  Seccion.revision,
+  Seccion.inversiones,
 ];
 
 final seccionProvider =
@@ -74,12 +78,16 @@ class Caparazon extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(seccion.titulo),
+        titleSpacing: 12,
+        title: Text(seccion.titulo, overflow: TextOverflow.fade, softWrap: false),
+        // El ojo no va aqui: en el prototipo cada seccion tiene el suyo, al
+        // lado de las cifras que tapa. Uno global en la barra ademas no
+        // entraba junto al segmentado y al mes.
         actions: const [
           _SelectorMoneda(),
           _SelectorPeriodo(),
           _BotonSync(),
-          SizedBox(width: 8),
+          SizedBox(width: 4),
         ],
       ),
       drawer: esAncho ? null : const _Menu(),
@@ -101,7 +109,7 @@ class Caparazon extends ConsumerWidget {
               icon: const Icon(Icons.add),
               label: const Text('Gasto'),
               backgroundColor: t.marca,
-              foregroundColor: t.plano,
+              foregroundColor: t.marcaTinta,
             )
           : null,
       bottomNavigationBar: esAncho
@@ -179,7 +187,7 @@ class _Menu extends ConsumerWidget {
                     child: Text(
                       'S/',
                       style: TextStyle(
-                        color: t.plano,
+                        color: t.marcaTinta,
                         fontWeight: FontWeight.w700,
                         fontSize: 17,
                       ),
@@ -250,10 +258,11 @@ class _Menu extends ConsumerWidget {
 
 /// Selector de mes. Vive en la barra superior porque casi todas las pantallas
 /// dependen de el.
-/// El cambio de libro.
+/// El cambio de libro: un segmentado S/ | $, como en el prototipo.
 ///
-/// Cada moneda lleva su propia contabilidad y nada se convierte para sumarse,
-/// asi que esto no es un filtro: es pasar de un libro al otro.
+/// No es un filtro con dos estados escondidos detras de un toque: las dos
+/// monedas se ven siempre, porque cada una es una contabilidad entera y hay
+/// que saber en cual estas parado sin tener que adivinar.
 class _SelectorMoneda extends ConsumerWidget {
   const _SelectorMoneda();
 
@@ -261,30 +270,46 @@ class _SelectorMoneda extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final moneda = ref.watch(monedaProvider);
     final t = context.tokens;
-    final esSoles = moneda == 'PEN';
 
-    return Semantics(
-      button: true,
-      label: esSoles ? 'Libro en soles' : 'Libro en dolares',
-      child: Tooltip(
-        message: esSoles ? 'Estas en soles. Toca para ver dolares.'
-            : 'Estas en dolares. Toca para ver soles.',
+    Widget gajo(String valor, String etiqueta) {
+      final activo = moneda == valor;
+      return Semantics(
+        selected: activo,
+        button: true,
+        label: valor == 'PEN' ? 'Libro en soles' : 'Libro en dolares',
         child: InkWell(
           borderRadius: BorderRadius.circular(radioPastilla),
-          onTap: () => ref.read(monedaProvider.notifier).alternar(),
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          onTap: () => ref.read(monedaProvider.notifier).cambiar(valor),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
             decoration: BoxDecoration(
-              color: t.marca.withValues(alpha: 0.14),
+              color: activo ? t.marca : Colors.transparent,
               borderRadius: BorderRadius.circular(radioPastilla),
             ),
             child: Text(
-              esSoles ? 'S/' : 'US\$',
-              style: context.texto.titleSmall?.copyWith(color: t.marca),
+              etiqueta,
+              style: context.texto.titleSmall?.copyWith(
+                color: activo ? t.marcaTinta : t.apagado,
+                fontSize: 13,
+              ),
             ),
           ),
         ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 9),
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: t.superficie2,
+        borderRadius: BorderRadius.circular(radioPastilla),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [gajo('PEN', 'S/'), gajo('USD', r'$')],
       ),
     );
   }

@@ -17,7 +17,7 @@ class BaseDatos {
 
   static final BaseDatos instancia = BaseDatos._();
 
-  static const int _version = 2;
+  static const int _version = 3;
 
   Database? _db;
 
@@ -58,6 +58,62 @@ class BaseDatos {
   /// del usuario es su historial y no se puede perder.
   Future<void> _migrar(Database d, int desde, int hasta) async {
     if (desde < 2) await _v2MonedaEnPresupuesto(d);
+    if (desde < 3) await _v3ColoresDeLeep(d);
+  }
+
+  /// v3: las categorias pasan a los colores de Leep.
+  ///
+  /// La semilla solo corre al crear la base, asi que quien ya tenia la app
+  /// instalada se quedaba con la paleta vieja y veia los graficos en morado y
+  /// naranja mientras el resto de la app ya era verde.
+  ///
+  /// Solo se tocan las filas que siguen teniendo el color de fabrica viejo:
+  /// si alguien le cambio el color a una categoria, esa eleccion se respeta.
+  Future<void> _v3ColoresDeLeep(Database d) async {
+    const equivalencias = <String, String>{
+      '#F97316': '#9E4420', // Alimentacion
+      '#0EA5E9': '#0A6360', // Transporte
+      '#8B5CF6': '#22306B', // Vivienda
+      '#10B981': '#1E5A37', // Salud
+      '#6366F1': '#C87A3E', // Suscripciones
+      '#EC4899': '#D4607A', // Entretenimiento
+      '#F59E0B': '#E08B5B', // Compras
+      '#14B8A6': '#3FB8AE', // Envios a personas
+      '#64748B': '#17191A', // Financiero
+      '#22C55E': '#86C79A', // Ingresos
+      '#3B82F6': '#0E807C', // Inversiones
+      '#94A3B8': '#A19786', // Sin clasificar y movimientos internos
+    };
+
+    final b = d.batch();
+    equivalencias.forEach((viejo, nuevo) {
+      b.update(
+        'categorias',
+        {'color': nuevo},
+        where: 'color = ?',
+        whereArgs: [viejo],
+      );
+    });
+
+    // Leep le da tono propio a estas dos dentro de Alimentacion.
+    b.update('categorias', {'color': '#E08B5B'},
+        where: 'subcategoria = ? AND color = ?',
+        whereArgs: ['Delivery', '#9E4420']);
+    b.update('categorias', {'color': '#C87A3E'},
+        where: 'subcategoria = ? AND color = ?',
+        whereArgs: ['Cafeteria', '#9E4420']);
+
+    // El color y el icono de una categoria salen de su primera subcategoria
+    // por orden. En Alimentacion esa era Delivery, asi que la categoria entera
+    // se pintaba con su tono claro en vez del suyo. El plato va primero.
+    b.update('categorias', {'orden': 11},
+        where: 'categoria = ? AND subcategoria = ?',
+        whereArgs: ['Alimentacion', 'Delivery']);
+    b.update('categorias', {'orden': 10},
+        where: 'categoria = ? AND subcategoria = ?',
+        whereArgs: ['Alimentacion', 'Restaurantes']);
+
+    await b.commit(noResult: true);
   }
 
   /// v2: la moneda entra en la clave del presupuesto.
