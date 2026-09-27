@@ -113,7 +113,7 @@ class _Estado extends ConsumerState<_GastoRapido> {
                       label: Text(a.$1),
                       selected: _categoria == a.$2 && _subcategoria == a.$3,
                       showCheckmark: false,
-                      selectedColor: marca.withValues(alpha: 0.16),
+                      selectedColor: t.marca.withValues(alpha: 0.16),
                       onSelected: (_) => setState(() {
                         _categoria = a.$2;
                         _subcategoria = a.$3;

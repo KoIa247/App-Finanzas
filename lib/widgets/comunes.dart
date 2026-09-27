@@ -171,7 +171,7 @@ class Aviso extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final color = switch (tono) {
-      TonoAviso.info => marca,
+      TonoAviso.info => t.marca,
       TonoAviso.bueno => t.bueno,
       TonoAviso.aviso => t.aviso,
       TonoAviso.serio => t.serio,

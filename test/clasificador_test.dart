@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mateito/data/clasificador/motor_reglas.dart';
-import 'package:mateito/data/clasificador/suscripciones.dart';
-import 'package:mateito/data/db/semilla.dart';
-import 'package:mateito/data/parser/contexto.dart';
-import 'package:mateito/domain/enums.dart';
-import 'package:mateito/domain/movimiento.dart';
+import 'package:leep/data/clasificador/motor_reglas.dart';
+import 'package:leep/data/clasificador/suscripciones.dart';
+import 'package:leep/data/db/semilla.dart';
+import 'package:leep/data/parser/contexto.dart';
+import 'package:leep/domain/enums.dart';
+import 'package:leep/domain/movimiento.dart';
 
 MovimientoCrudo gasto(String comercio) =>
     MovimientoCrudo(comercio: comercio, tipo: TipoMovimiento.gasto);

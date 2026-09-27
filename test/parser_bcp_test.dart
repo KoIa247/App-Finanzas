@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mateito/data/parser/contexto.dart';
-import 'package:mateito/data/parser/parsers.dart';
-import 'package:mateito/domain/enums.dart';
+import 'package:leep/data/parser/contexto.dart';
+import 'package:leep/data/parser/parsers.dart';
+import 'package:leep/domain/enums.dart';
 
 /// Arma un correo del BCP con la tabla "Etiqueta | Valor" que usan todas sus
 /// plantillas reales.

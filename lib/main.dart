@@ -26,7 +26,7 @@ class AppFinanzas extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Finanzas',
+      title: 'Leep',
       debugShowCheckedModeBanner: false,
       themeMode: ref.watch(temaProvider),
       theme: construirTema(Brightness.light),

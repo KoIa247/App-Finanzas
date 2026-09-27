@@ -70,6 +70,7 @@ class Caparazon extends ConsumerWidget {
     final seccion = ref.watch(seccionProvider);
     final ancho = MediaQuery.sizeOf(context).width;
     final esAncho = ancho >= 900;
+    final t = context.tokens;
 
     return Scaffold(
       appBar: AppBar(
@@ -94,8 +95,8 @@ class Caparazon extends ConsumerWidget {
               onPressed: () => abrirGastoRapido(context, ref),
               icon: const Icon(Icons.add),
               label: const Text('Gasto'),
-              backgroundColor: marca,
-              foregroundColor: Colors.white,
+              backgroundColor: t.marca,
+              foregroundColor: t.plano,
             )
           : null,
       bottomNavigationBar: esAncho
@@ -167,13 +168,13 @@ class _Menu extends ConsumerWidget {
                     height: 40,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: marca,
-                      borderRadius: BorderRadius.circular(11),
+                      color: t.marca,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Text(
+                    child: Text(
                       'S/',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: t.plano,
                         fontWeight: FontWeight.w700,
                         fontSize: 17,
                       ),
@@ -208,7 +209,7 @@ class _Menu extends ConsumerWidget {
                           Icon(s == seccion ? s.iconoActivo : s.icono),
                       title: Text(s.titulo),
                       selected: s == seccion,
-                      selectedColor: marca,
+                      selectedColor: t.marca,
                       onTap: () {
                         ref.read(seccionProvider.notifier).ir(s);
                         Navigator.pop(context);

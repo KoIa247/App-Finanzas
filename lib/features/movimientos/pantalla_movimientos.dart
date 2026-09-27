@@ -227,8 +227,8 @@ class _Filtro extends StatelessWidget {
           etiqueta,
           style: TextStyle(color: activo ? Colors.white : t.tinta2),
         ),
-        backgroundColor: activo ? marca : t.superficie2,
-        side: BorderSide(color: activo ? marca : t.borde),
+        backgroundColor: activo ? t.marca : t.superficie2,
+        side: BorderSide(color: activo ? t.marca : t.borde),
         deleteIcon: Icon(
           Icons.arrow_drop_down,
           size: 18,

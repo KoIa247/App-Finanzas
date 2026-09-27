@@ -21,3 +21,6 @@ linux/
 **/GoogleService-Info.plist
 *.keystore
 *.jks
+
+# Prototipo de diseno de Leep (referencia, no fuente)
+App de finanzas personales Leep/

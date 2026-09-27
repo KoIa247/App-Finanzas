@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// Los colores del sistema, tomados del prototipo.
+/// Los colores del sistema, tomados del prototipo de Leep.
 ///
 /// Es una paleta calida de papel, no el gris azulado de Material por defecto:
 /// una app que miras todos los dias para ver malas noticias sobre tu plata
 /// agradece verse tranquila.
+///
+/// El tema claro sale tal cual del prototipo. El oscuro no: el prototipo es
+/// solo claro, asi que esta derivado. La regla al derivarlo fue no invertir
+/// nada a ciegas, porque el verde de marca sobre negro no se lee; en oscuro el
+/// acento pasa al verde menta, que si contrasta.
 class Tokens {
   const Tokens({
     required this.plano,
@@ -15,6 +20,7 @@ class Tokens {
     required this.apagado,
     required this.grilla,
     required this.borde,
+    required this.marca,
     required this.bueno,
     required this.aviso,
     required this.serio,
@@ -31,6 +37,9 @@ class Tokens {
   final Color grilla;
   final Color borde;
 
+  /// El verde de Leep. Cambia entre temas a proposito: ver la nota de arriba.
+  final Color marca;
+
   final Color bueno;
   final Color aviso;
   final Color serio;
@@ -40,57 +49,59 @@ class Tokens {
   final List<Color> serie;
 
   static const claro = Tokens(
-    plano: Color(0xFFF9F9F7),
-    superficie: Color(0xFFFCFCFB),
-    superficie2: Color(0xFFF2F2EF),
-    tinta: Color(0xFF0B0B0B),
-    tinta2: Color(0xFF52514E),
-    apagado: Color(0xFF898781),
-    grilla: Color(0xFFE1E0D9),
-    borde: Color(0x1A0B0B0B),
-    bueno: Color(0xFF0CA30C),
-    aviso: Color(0xFFFAB219),
-    serio: Color(0xFFEC835A),
-    critico: Color(0xFFD03B3B),
+    plano: Color(0xFFF5EAD8),
+    superficie: Color(0xFFF9F4ED),
+    superficie2: Color(0xFFEBDDC5),
+    tinta: Color(0xFF201E1D),
+    tinta2: Color(0xFF656260),
+    apagado: Color(0xFF918D89),
+    grilla: Color(0xFFDCD3C4),
+    borde: Color(0x24201E1D),
+    marca: Color(0xFF1E5A37),
+    bueno: Color(0xFF1E5A37),
+    aviso: Color(0xFFC87A3E),
+    serio: Color(0xFF9E4420),
+    critico: Color(0xFF93122E),
     serie: [
-      Color(0xFF2A78D6),
-      Color(0xFFEB6834),
-      Color(0xFF1BAF7A),
-      Color(0xFFEDA100),
-      Color(0xFFE87BA4),
-      Color(0xFF008300),
-      Color(0xFF4A3AA7),
-      Color(0xFFE34948),
+      Color(0xFF9E4420),
+      Color(0xFF0A6360),
+      Color(0xFF22306B),
+      Color(0xFFC87A3E),
+      Color(0xFF1E5A37),
+      Color(0xFFD4607A),
+      Color(0xFF3FB8AE),
+      Color(0xFFE08B5B),
     ],
   );
 
   static const oscuro = Tokens(
-    plano: Color(0xFF0D0D0D),
-    superficie: Color(0xFF1A1A19),
-    superficie2: Color(0xFF242422),
-    tinta: Color(0xFFFFFFFF),
-    tinta2: Color(0xFFC3C2B7),
-    apagado: Color(0xFF898781),
-    grilla: Color(0xFF2C2C2A),
-    borde: Color(0x1AFFFFFF),
-    bueno: Color(0xFF0CA30C),
-    aviso: Color(0xFFFAB219),
-    serio: Color(0xFFEC835A),
-    critico: Color(0xFFE66767),
+    plano: Color(0xFF17191A),
+    superficie: Color(0xFF1F2223),
+    superficie2: Color(0xFF282C2D),
+    tinta: Color(0xFFF5EAD8),
+    tinta2: Color(0xFFB9B0A3),
+    apagado: Color(0xFF8A8478),
+    grilla: Color(0xFF33383A),
+    borde: Color(0x24F5EAD8),
+    marca: Color(0xFF86C79A),
+    bueno: Color(0xFF86C79A),
+    aviso: Color(0xFFE0A45B),
+    serio: Color(0xFFE08B5B),
+    critico: Color(0xFFE2647E),
     serie: [
-      Color(0xFF3987E5),
-      Color(0xFFD95926),
-      Color(0xFF199E70),
-      Color(0xFFC98500),
-      Color(0xFFD55181),
-      Color(0xFF008300),
-      Color(0xFF9085E9),
-      Color(0xFFE66767),
+      Color(0xFFD1734A),
+      Color(0xFF3FB8AE),
+      Color(0xFF7C8CD4),
+      Color(0xFFE0A45B),
+      Color(0xFF86C79A),
+      Color(0xFFE38BA2),
+      Color(0xFF6FD6CE),
+      Color(0xFFEFA97D),
     ],
   );
 
   /// Color de una categoria a partir del hex que guarda el catalogo.
-  static Color desdeHex(String hex, {Color respaldo = const Color(0xFF94A3B8)}) {
+  static Color desdeHex(String hex, {Color respaldo = const Color(0xFFA19786)}) {
     var h = hex.replaceAll('#', '').trim();
     if (h.length == 6) h = 'FF$h';
     if (h.length != 8) return respaldo;
@@ -108,8 +119,28 @@ extension TokensDeContexto on BuildContext {
   TextTheme get texto => Theme.of(this).textTheme;
 }
 
-/// El azul de la marca.
-const Color marca = Color(0xFF0A47F0);
+/// Las dos familias del prototipo. Sora para titulares y cifras, Manrope para
+/// el texto corrido. Van empaquetadas en assets/fonts: ver pubspec.
+const String fuenteTitular = 'Sora';
+const String fuenteTexto = 'Manrope';
+
+/// Verde de marca para superficies llenas: la portada del resumen, el boton
+/// flotante, la insignia del cajon.
+///
+/// Es el mismo en los dos temas, y por eso no sale de los tokens. Encima va
+/// texto crema, asi que no puede aclararse en oscuro como si hace `marca`:
+/// quedaria crema sobre menta y no se leeria.
+const Color verdeLleno = Color(0xFF1E5A37);
+
+/// El crema que va encima de `verdeLleno`. Blanco puro sobre este verde se ve
+/// frio al lado del resto de la paleta.
+const Color cremaSobreVerde = Color(0xFFF5EAD8);
+
+/// Radios del prototipo: contenedores de 28 a 36, controles tipo pastilla.
+/// "Nada con esquina viva."
+const double radioTarjeta = 28;
+const double radioCampo = 18;
+const double radioPastilla = 999;
 
 ThemeData construirTema(Brightness brillo) {
   final t = brillo == Brightness.dark ? Tokens.oscuro : Tokens.claro;
@@ -117,10 +148,12 @@ ThemeData construirTema(Brightness brillo) {
   final base = ThemeData(
     useMaterial3: true,
     brightness: brillo,
+    fontFamily: fuenteTexto,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: marca,
+      seedColor: t.marca,
       brightness: brillo,
     ).copyWith(
+      primary: t.marca,
       surface: t.plano,
       onSurface: t.tinta,
     ),
@@ -134,22 +167,26 @@ ThemeData construirTema(Brightness brillo) {
   return base.copyWith(
     textTheme: base.textTheme.copyWith(
       displaySmall: base.textTheme.displaySmall?.copyWith(
+        fontFamily: fuenteTitular,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.8,
+        letterSpacing: -0.9,
         color: t.tinta,
         fontFeatures: tabular,
       ),
       headlineSmall: base.textTheme.headlineSmall?.copyWith(
+        fontFamily: fuenteTitular,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.4,
+        letterSpacing: -0.5,
         color: t.tinta,
         fontFeatures: tabular,
       ),
       titleMedium: base.textTheme.titleMedium?.copyWith(
+        fontFamily: fuenteTitular,
         fontWeight: FontWeight.w600,
         color: t.tinta,
       ),
       titleSmall: base.textTheme.titleSmall?.copyWith(
+        fontFamily: fuenteTitular,
         fontWeight: FontWeight.w600,
         color: t.tinta,
       ),
@@ -158,7 +195,7 @@ ThemeData construirTema(Brightness brillo) {
       labelSmall: base.textTheme.labelSmall?.copyWith(
         color: t.apagado,
         fontWeight: FontWeight.w600,
-        letterSpacing: 0.4,
+        letterSpacing: 0.6,
       ),
     ),
     appBarTheme: AppBarTheme(
@@ -169,10 +206,11 @@ ThemeData construirTema(Brightness brillo) {
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
+        fontFamily: fuenteTitular,
         color: t.tinta,
         fontSize: 20,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
+        letterSpacing: -0.4,
       ),
     ),
     cardTheme: CardThemeData(
@@ -181,7 +219,7 @@ ThemeData construirTema(Brightness brillo) {
       elevation: 0,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(radioTarjeta),
         side: BorderSide(color: t.borde),
       ),
     ),
@@ -190,51 +228,59 @@ ThemeData construirTema(Brightness brillo) {
       filled: true,
       fillColor: t.superficie2,
       contentPadding:
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: BorderRadius.circular(radioCampo),
         borderSide: BorderSide(color: t.borde),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: BorderRadius.circular(radioCampo),
         borderSide: BorderSide(color: t.borde),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(9),
-        borderSide: const BorderSide(color: marca, width: 1.6),
+        borderRadius: BorderRadius.circular(radioCampo),
+        borderSide: BorderSide(color: t.marca, width: 1.6),
       ),
       labelStyle: TextStyle(color: t.apagado),
       hintStyle: TextStyle(color: t.apagado),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: marca,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        backgroundColor: t.marca,
+        foregroundColor: t.plano,
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(9),
+          borderRadius: BorderRadius.circular(radioPastilla),
         ),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        textStyle: const TextStyle(
+          fontFamily: fuenteTexto,
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: t.tinta,
         side: BorderSide(color: t.borde),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(9),
+          borderRadius: BorderRadius.circular(radioPastilla),
         ),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        textStyle: const TextStyle(
+          fontFamily: fuenteTexto,
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+        ),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: marca),
+      style: TextButton.styleFrom(foregroundColor: t.marca),
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: t.superficie,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: marca.withValues(alpha: 0.12),
+      indicatorColor: t.marca.withValues(alpha: 0.16),
       height: 68,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       labelTextStyle: WidgetStatePropertyAll(
@@ -245,24 +291,29 @@ ThemeData construirTema(Brightness brillo) {
       backgroundColor: t.superficie2,
       side: BorderSide(color: t.borde),
       labelStyle: TextStyle(color: t.tinta2, fontSize: 13),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radioPastilla),
+      ),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: t.tinta,
       contentTextStyle: TextStyle(color: t.plano),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radioCampo),
+      ),
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: t.superficie,
       surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(radioTarjeta)),
       ),
     ),
     listTileTheme: ListTileThemeData(
       iconColor: t.apagado,
       titleTextStyle: TextStyle(
+        fontFamily: fuenteTexto,
         color: t.tinta,
         fontSize: 15,
         fontWeight: FontWeight.w600,

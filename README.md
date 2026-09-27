@@ -1,4 +1,4 @@
-# Finanzas · app de finanzas personales para Peru
+# Leep · app de finanzas personales para Peru
 
 Lee los correos que tu banco te manda cada vez que gastas, los convierte en
 movimientos clasificados y arma tu presupuesto solo. Todo pasa en el telefono:
@@ -45,17 +45,17 @@ de ese codigo, que lleva meses probado contra correos reales del BCP.
 ## Como correrlo
 
 Hace falta **Flutter 3.27 o mas nuevo**. Verificado contra Flutter 3.47.3 y
-Dart 3.13.3: `flutter analyze` sin observaciones, **61 pruebas en verde** y APK
+Dart 3.13.3: `flutter analyze` sin observaciones, **67 pruebas en verde** y APK
 de release compilado (55.5 MB, arm64-v8a + armeabi-v7a + x86_64).
 
 Las carpetas `android/` e `ios/` estan en `.gitignore` porque las genera la
 herramienta. Si clonas el repo desde cero:
 
 ```bash
-cd mateito
+cd leep
 
 # Genera android/, ios/, etc. Respeta lib/, test/ y pubspec.yaml.
-flutter create . --project-name mateito --org com.mateito --platforms android,ios
+flutter create . --project-name leep --org com.leep --platforms android,ios
 
 flutter pub get
 flutter analyze
@@ -104,6 +104,21 @@ Lo mas simple a largo plazo es mover el proyecto fuera de OneDrive.
 
 ---
 
+## El cambio de nombre a Leep
+
+La app se llamaba **mateito**. Al renombrarla cambio tambien el id del paquete,
+de `com.mateito.mateito` a `com.leep.leep`, y eso arrastra dos consecuencias que
+conviene tener presentes.
+
+- **El cliente OAuth de Android deja de servir.** Google lo resuelve por package
+  name mas SHA-1, asi que hay que crear uno nuevo en Google Cloud con
+  `com.leep.leep`. Hasta entonces la sincronizacion con Gmail no conecta.
+- **Los datos de una instalacion anterior no viajan.** Android le da al id nuevo
+  un sandbox propio, asi que `mateito.db` se queda en el del paquete viejo.
+  `BaseDatos._heredarDeMateito` mueve la base cuando las dos comparten carpeta
+  (escritorio, pruebas, o una instalacion que conserve el id), pero en el
+  telefono, tras el cambio de id, la instalacion arranca vacia.
+
 ## Conectar Gmail
 
 El permiso que pide la app es `gmail.readonly`. No puede escribir, enviar ni
@@ -124,7 +139,7 @@ Cloud, y ellos solo tocan "Continuar con Google".
 ### 2. Credenciales
 
 **Android** — crea un OAuth client de tipo *Android* con tu package name
-(`com.example.mateito` si no lo cambias) y el SHA-1 de tu keystore:
+(`com.leep.leep`) y el SHA-1 de tu keystore:
 
 ```bash
 # Debug

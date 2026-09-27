@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
@@ -24,8 +25,10 @@ class BaseDatos {
 
   Future<Database> _abrir() async {
     final dir = await getDatabasesPath();
+    final ruta = p.join(dir, 'leep.db');
+    await _heredarDeMateito(dir, ruta);
     return openDatabase(
-      p.join(dir, 'mateito.db'),
+      ruta,
       version: _version,
       onConfigure: (d) => d.execute('PRAGMA foreign_keys = ON'),
       onCreate: (d, v) async {
@@ -34,6 +37,21 @@ class BaseDatos {
       },
       onUpgrade: _migrar,
     );
+  }
+
+  /// La app se llamaba mateito y su base era mateito.db. Si las dos bases
+  /// comparten carpeta, movemos la vieja para no perder el historial.
+  ///
+  /// Ojo con el alcance: en el telefono esto solo sirve si el id de la app no
+  /// cambio. Al pasar de com.mateito.mateito a com.leep.leep, Android le da a
+  /// Leep un sandbox nuevo y mateito.db se queda en el del otro paquete, fuera
+  /// de alcance. Sirve entonces para escritorio, pruebas y cualquier instalacion
+  /// que haya conservado el id. Pasa una sola vez: si ya hay leep.db, no toca nada.
+  Future<void> _heredarDeMateito(String dir, String rutaNueva) async {
+    if (await databaseExists(rutaNueva)) return;
+    final rutaVieja = p.join(dir, 'mateito.db');
+    if (!await databaseExists(rutaVieja)) return;
+    await File(rutaVieja).rename(rutaNueva);
   }
 
   Future<void> _migrar(Database d, int desde, int hasta) async {

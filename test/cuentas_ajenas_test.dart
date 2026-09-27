@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mateito/data/ingesta/cuentas_ajenas.dart';
-import 'package:mateito/data/ingesta/servicio_ingesta.dart';
-import 'package:mateito/data/parser/contexto.dart';
-import 'package:mateito/domain/catalogo.dart';
-import 'package:mateito/domain/enums.dart';
+import 'package:leep/data/ingesta/cuentas_ajenas.dart';
+import 'package:leep/data/ingesta/servicio_ingesta.dart';
+import 'package:leep/data/parser/contexto.dart';
+import 'package:leep/domain/catalogo.dart';
+import 'package:leep/domain/enums.dart';
 
 const mias = [
   Cuenta(

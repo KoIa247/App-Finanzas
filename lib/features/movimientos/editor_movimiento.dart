@@ -320,10 +320,10 @@ class _SelectorCategoria extends StatelessWidget {
                   label: Text(s),
                   selected: s == subcategoria,
                   showCheckmark: false,
-                  selectedColor: marca.withValues(alpha: 0.16),
+                  selectedColor: t.marca.withValues(alpha: 0.16),
                   labelStyle: TextStyle(
                     fontSize: 13,
-                    color: s == subcategoria ? marca : t.tinta2,
+                    color: s == subcategoria ? t.marca : t.tinta2,
                     fontWeight:
                         s == subcategoria ? FontWeight.w600 : FontWeight.w400,
                   ),

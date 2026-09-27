@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mateito/core/formato.dart';
+import 'package:leep/core/formato.dart';
 
 void main() {
   group('formato de plata', () {

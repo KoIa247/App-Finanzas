@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mateito/core/fechas.dart';
-import 'package:mateito/core/numeros.dart';
-import 'package:mateito/core/texto.dart';
+import 'package:leep/core/fechas.dart';
+import 'package:leep/core/numeros.dart';
+import 'package:leep/core/texto.dart';
 
 void main() {
   group('parsearImporte', () {

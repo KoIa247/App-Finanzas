@@ -179,8 +179,9 @@ class _Portada extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // El fondo de la portada es un degradado fijo, asi que los textos van en
-    // blanco directo y no en tokens de tema.
+    // El fondo de la portada es el verde de marca en los dos temas, asi que
+    // los textos van en crema directo y no en tokens: si siguieran al tema, en
+    // oscuro quedarian claros sobre un fondo que no se aclara.
     final p = d.posicion;
 
     return Container(
@@ -190,7 +191,7 @@ class _Portada extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [marca, marca.withValues(alpha: 0.78)],
+          colors: [verdeLleno, verdeLleno.withValues(alpha: 0.86)],
         ),
       ),
       child: Column(
@@ -199,7 +200,7 @@ class _Portada extends ConsumerWidget {
           Text(
             'PATRIMONIO NETO',
             style: context.texto.labelSmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.75),
+              color: cremaSobreVerde.withValues(alpha: 0.75),
             ),
           ),
           const SizedBox(height: 8),
@@ -208,7 +209,7 @@ class _Portada extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               p.hayFoto ? plata(p.neto) : 'Sin registrar',
-              style: context.texto.displaySmall?.copyWith(color: Colors.white),
+              style: context.texto.displaySmall?.copyWith(color: cremaSobreVerde),
             ),
           ),
           const SizedBox(height: 8),
@@ -220,7 +221,7 @@ class _Portada extends ConsumerWidget {
                     '${p.inversionesPen > 0 ? ' · inversiones ${plataCorta(p.inversionesPen)}' : ''}'
                 : 'Copia tus saldos de la app del banco para verlo aqui.',
             style: context.texto.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: cremaSobreVerde.withValues(alpha: 0.9),
               height: 1.5,
             ),
           ),
@@ -229,8 +230,8 @@ class _Portada extends ConsumerWidget {
             children: [
               FilledButton.tonal(
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white.withValues(alpha: 0.18),
-                  foregroundColor: Colors.white,
+                  backgroundColor: cremaSobreVerde.withValues(alpha: 0.18),
+                  foregroundColor: cremaSobreVerde,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
@@ -243,7 +244,7 @@ class _Portada extends ConsumerWidget {
                 Text(
                   'USD ${p.tipoCambio.toStringAsFixed(3)}',
                   style: context.texto.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: cremaSobreVerde.withValues(alpha: 0.75),
                   ),
                 ),
             ],
