@@ -8,7 +8,6 @@ import '../ajustes/pantalla_accesibilidad.dart';
 import '../ajustes/pantalla_fuentes.dart';
 import '../ajustes/pantalla_perfil.dart';
 import '../ajustes/pantalla_ajustes.dart';
-import '../cuentas/pantalla_cuentas.dart';
 import '../dashboard/pantalla_dashboard.dart';
 import '../inversiones/pantalla_inversiones.dart';
 import '../../widgets/marca.dart';
@@ -29,7 +28,6 @@ enum Seccion {
   presupuesto('Presupuesto', Icons.pie_chart_outline, Icons.pie_chart),
   metas('Metas', Icons.flag_outlined, Icons.flag),
   revision('Revisar', Icons.rule_outlined, Icons.rule),
-  cuentas('Cuentas', Icons.account_balance_outlined, Icons.account_balance),
   categorias('Categorias', Icons.label_outline, Icons.label),
   suscripciones('Suscripciones', Icons.autorenew_outlined, Icons.autorenew),
   accesibilidad('Accesibilidad', Icons.accessibility_new_outlined, Icons.accessibility_new),
@@ -50,7 +48,6 @@ enum Seccion {
         Seccion.presupuesto => const PantallaPresupuesto(),
         Seccion.metas => const PantallaMetas(),
         Seccion.revision => const PantallaRevision(),
-        Seccion.cuentas => const PantallaCuentas(),
         Seccion.categorias => const PantallaCategorias(),
         Seccion.suscripciones => const PantallaSuscripciones(),
         Seccion.accesibilidad => const PantallaAccesibilidad(),

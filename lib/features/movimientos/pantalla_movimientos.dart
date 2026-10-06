@@ -11,6 +11,7 @@ import '../../domain/enums.dart';
 import '../../domain/movimiento.dart';
 import '../../providers.dart';
 import '../../widgets/async.dart';
+import '../cuentas/pantalla_cuentas.dart';
 import '../../widgets/comunes.dart';
 import 'ficha_movimiento.dart';
 
@@ -21,9 +22,17 @@ class PantallaMovimientos extends ConsumerStatefulWidget {
   ConsumerState<PantallaMovimientos> createState() => _Estado();
 }
 
+/// Las tres caras de Movimientos, como en el prototipo.
+///
+/// Cuentas dejo de ser una seccion suelta del cajon: el prototipo la mete
+/// aqui, y tiene sentido, porque uno entra a "mis cuentas" por la misma razon
+/// por la que entra a "mis movimientos".
+enum _Cara { historial, tarjetas, cuentas }
+
 class _Estado extends ConsumerState<PantallaMovimientos> {
   final _busqueda = TextEditingController();
   Timer? _rebote;
+  _Cara _cara = _Cara.historial;
 
   @override
   void dispose() {
@@ -49,19 +58,85 @@ class _Estado extends ConsumerState<PantallaMovimientos> {
 
     return Column(
       children: [
-        _Filtros(
-          controlador: _busqueda,
-          alBuscar: _buscar,
-          filtro: filtro,
-        ),
-        Expanded(
-          child: movs.vista(
-            (lista) => _Lista(lista),
-            alReintentar: () => ref.invalidate(movimientosProvider),
-            altoCarga: 300,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: _Caras(
+            cara: _cara,
+            alCambiar: (c) => setState(() => _cara = c),
           ),
         ),
+        if (_cara == _Cara.historial) ...[
+          _Filtros(
+            controlador: _busqueda,
+            alBuscar: _buscar,
+            filtro: filtro,
+          ),
+          Expanded(
+            child: movs.vista(
+              (lista) => _Lista(lista),
+              alReintentar: () => ref.invalidate(movimientosProvider),
+              altoCarga: 300,
+            ),
+          ),
+        ] else
+          Expanded(
+            child: PantallaCuentas(soloTarjetas: _cara == _Cara.tarjetas),
+          ),
       ],
+    );
+  }
+}
+
+/// El segmentado de las tres caras.
+class _Caras extends StatelessWidget {
+  const _Caras({required this.cara, required this.alCambiar});
+
+  final _Cara cara;
+  final ValueChanged<_Cara> alCambiar;
+
+  static const _etiquetas = {
+    _Cara.historial: 'Historial',
+    _Cara.tarjetas: 'Tarjetas',
+    _Cara.cuentas: 'Cuentas',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: t.superficie2,
+        borderRadius: BorderRadius.circular(radioPastilla),
+      ),
+      child: Row(
+        children: [
+          for (final c in _Cara.values)
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(radioPastilla),
+                onTap: () => alCambiar(c),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  curve: Curves.easeOut,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: cara == c ? t.marca : Colors.transparent,
+                    borderRadius: BorderRadius.circular(radioPastilla),
+                  ),
+                  child: Text(
+                    _etiquetas[c]!,
+                    style: context.texto.bodySmall?.copyWith(
+                      color: cara == c ? t.marcaTinta : t.apagado,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

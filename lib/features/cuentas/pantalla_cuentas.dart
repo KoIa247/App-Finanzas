@@ -13,7 +13,11 @@ import '../../widgets/async.dart';
 import '../../widgets/comunes.dart';
 
 class PantallaCuentas extends ConsumerWidget {
-  const PantallaCuentas({super.key});
+  const PantallaCuentas({super.key, this.soloTarjetas = false});
+
+  /// Cuando Movimientos la muestra en su pestania de Tarjetas, solo interesan
+  /// las de credito y no el patrimonio entero.
+  final bool soloTarjetas;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,6 +30,37 @@ class PantallaCuentas extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
         children: [
+          if (soloTarjetas) ...[
+            Bloque(
+              titulo: 'Tus tarjetas',
+              nota: 'Los ultimos 4 digitos son lo que permite saber con cual '
+                  'pagaste cada cosa: es el unico dato que viene en el correo '
+                  'del banco para distinguirlas.',
+              accion: TextButton.icon(
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Nueva'),
+                onPressed: () => _editarCuenta(context, ref, null),
+              ),
+              child: cuentas.vista(
+                (lista) {
+                  final tarjetas =
+                      lista.where((c) => c.esTarjetaCredito).toList();
+                  if (tarjetas.isEmpty) {
+                    return const Vacio(
+                      titulo: 'Todavia no registraste tarjetas',
+                      detalle: 'Agrega una con sus ultimos 4 digitos para que '
+                          'los correos se asignen solos.',
+                      icono: Icons.credit_card_outlined,
+                    );
+                  }
+                  return Column(
+                    children: [for (final c in tarjetas) _FilaCuenta(c)],
+                  );
+                },
+                altoCarga: 120,
+              ),
+            ),
+          ] else ...[
           Bloque(
             titulo: 'Mi posicion',
             nota: 'Estos numeros los registras tu copiandolos de la app de tu '
@@ -139,6 +174,7 @@ class PantallaCuentas extends ConsumerWidget {
               altoCarga: 100,
             ),
           ),
+          ],
         ],
       ),
     );
