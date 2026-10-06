@@ -10,6 +10,7 @@ import '../ajustes/pantalla_perfil.dart';
 import '../ajustes/pantalla_ajustes.dart';
 import '../dashboard/pantalla_dashboard.dart';
 import '../inversiones/pantalla_inversiones.dart';
+import '../../widgets/animaciones.dart';
 import '../../widgets/marca.dart';
 import '../categorias/pantalla_categorias.dart';
 import '../onboarding/pantalla_onboarding.dart';
@@ -133,27 +134,19 @@ class _Caparazon extends ConsumerWidget {
         // El titulo se encoge antes que cortarse: con el segmentado de moneda
         // y el mes al lado, "Presupuesto" no entra a tamanio completo y
         // quedaba en "Presupues".
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const MarcaLeep(tamanio: 22),
-            const SizedBox(width: 9),
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(seccion.titulo, maxLines: 1, softWrap: false),
-              ),
-            ),
-          ],
-        ),
+        // Sin titulo, como el prototipo: en su barra solo viven el menu, el
+        // cambio de moneda, la rana y el mes. El nombre de la seccion ya lo
+        // dice la barra de abajo o el encabezado de la propia pantalla, y
+        // quitarlo es lo que le deja sitio a la rana en el centro.
+        title: const SizedBox.shrink(),
         // El ojo no va aqui: en el prototipo cada seccion tiene el suyo, al
         // lado de las cifras que tapa. Uno global en la barra ademas no
         // entraba junto al segmentado y al mes.
+        // El orden del prototipo: la moneda, la rana y el mes.
         actions: const [
           _SelectorMoneda(),
-          _SelectorPeriodo(),
           _BotonSync(),
+          _SelectorPeriodo(),
           SizedBox(width: 4),
         ],
       ),
@@ -408,6 +401,65 @@ class _SelectorPeriodo extends ConsumerWidget {
 }
 
 /// Boton de sincronizar, con su estado.
+/// La rana como boton: se aplasta al tocarla y salta mientras sincroniza.
+///
+/// El prototipo le da `transform:scale(.88)` al pulsarla, con origen abajo,
+/// que es lo que hace que se sienta una rana agachandose para saltar y no un
+/// icono que parpadea.
+class _RanaBoton extends StatefulWidget {
+  const _RanaBoton({
+    required this.tooltip,
+    required this.alTocar,
+    this.apagada = false,
+  });
+
+  final String tooltip;
+  final Future<void> Function() alTocar;
+  final bool apagada;
+
+  @override
+  State<_RanaBoton> createState() => _EstadoRanaBoton();
+}
+
+class _EstadoRanaBoton extends State<_RanaBoton> {
+  bool _apretada = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Tooltip(
+      message: widget.tooltip,
+      child: Semantics(
+        button: true,
+        label: widget.tooltip,
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _apretada = true),
+          onTapCancel: () => setState(() => _apretada = false),
+          onTapUp: (_) => setState(() => _apretada = false),
+          onTap: widget.alTocar,
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: AnimatedScale(
+                scale: _apretada ? 0.88 : 1,
+                duration: const Duration(milliseconds: 150),
+                curve: curvaLeep,
+                alignment: Alignment.bottomCenter,
+                child: Opacity(
+                  opacity: widget.apagada ? 0.45 : 1,
+                  child: MarcaLeep(tamanio: 24, color: t.marca),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _BotonSync extends ConsumerWidget {
   const _BotonSync();
 
@@ -416,21 +468,19 @@ class _BotonSync extends ConsumerWidget {
     final estado = ref.watch(syncProvider);
     final conectado = ref.watch(sesionProvider).valueOrNull ?? false;
 
+    // La rana es el boton de sincronizar, no un adorno: en el prototipo se
+    // toca para volver a leer el correo y salta mientras lo hace.
     if (estado is SyncCorriendo) {
       return const Padding(
-        padding: EdgeInsets.all(14),
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2.4),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Center(child: RanaCargando(tamanio: 24)),
       );
     }
 
-    return IconButton(
-      tooltip: conectado ? 'Sincronizar correos' : 'Conecta tu Gmail',
-      icon: Icon(conectado ? Icons.sync : Icons.link_off),
-      onPressed: () async {
+    return _RanaBoton(
+      tooltip: conectado ? 'Volver a leer tu correo' : 'Conecta tu Gmail',
+      apagada: !conectado,
+      alTocar: () async {
         if (!conectado) {
           ref.read(seccionProvider.notifier).ir(Seccion.ajustes);
           return;
