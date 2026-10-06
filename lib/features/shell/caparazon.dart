@@ -5,12 +5,14 @@ import '../../core/fechas.dart';
 import '../../core/tema.dart';
 import '../../providers.dart';
 import '../ajustes/pantalla_accesibilidad.dart';
+import '../ajustes/pantalla_fuentes.dart';
 import '../ajustes/pantalla_perfil.dart';
 import '../ajustes/pantalla_ajustes.dart';
 import '../cuentas/pantalla_cuentas.dart';
 import '../dashboard/pantalla_dashboard.dart';
 import '../inversiones/pantalla_inversiones.dart';
 import '../categorias/pantalla_categorias.dart';
+import '../onboarding/pantalla_onboarding.dart';
 import '../metas/pantalla_metas.dart';
 import '../movimientos/pantalla_movimientos.dart';
 import '../presupuesto/pantalla_presupuesto.dart';
@@ -31,6 +33,7 @@ enum Seccion {
   suscripciones('Suscripciones', Icons.autorenew_outlined, Icons.autorenew),
   accesibilidad('Accesibilidad', Icons.accessibility_new_outlined, Icons.accessibility_new),
   perfil('Perfil', Icons.person_outline, Icons.person),
+  fuentes('Fuentes de datos', Icons.cloud_outlined, Icons.cloud),
   inversiones('Inversiones', Icons.trending_up_outlined, Icons.trending_up),
   ajustes('Ajustes', Icons.settings_outlined, Icons.settings);
 
@@ -51,6 +54,7 @@ enum Seccion {
         Seccion.suscripciones => const PantallaSuscripciones(),
         Seccion.accesibilidad => const PantallaAccesibilidad(),
         Seccion.perfil => const PantallaPerfil(),
+        Seccion.fuentes => const PantallaFuentes(),
         Seccion.inversiones => const PantallaInversiones(),
         Seccion.ajustes => const PantallaAjustes(),
       };
@@ -79,9 +83,37 @@ class SeccionNotifier extends Notifier<Seccion> {
   void ir(Seccion s) => state = s;
 }
 
-class Caparazon extends ConsumerWidget {
+class Caparazon extends ConsumerStatefulWidget {
   const Caparazon({super.key});
 
+  @override
+  ConsumerState<Caparazon> createState() => _EstadoCaparazon();
+}
+
+class _EstadoCaparazon extends ConsumerState<Caparazon> {
+  /// Se salta el onboarding dentro de esta sesion sin esperar a que la
+  /// config vuelva de la base: si no, al terminarlo la pantalla parpadea.
+  bool _saltado = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final config = ref.watch(configProvider).valueOrNull;
+
+    // Mientras no se sepa, no se muestra nada: ensenar la app y taparla un
+    // instante despues con el onboarding se ve peor que esperar.
+    if (config == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (!_saltado && (config[claveOnboarding] ?? '').isEmpty) {
+      return PantallaOnboarding(
+        alTerminar: () => setState(() => _saltado = true),
+      );
+    }
+    return _Caparazon();
+  }
+}
+
+class _Caparazon extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final seccion = ref.watch(seccionProvider);

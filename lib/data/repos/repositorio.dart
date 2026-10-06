@@ -269,6 +269,64 @@ class Repositorio {
     );
   }
 
+  /// Arma un presupuesto con el promedio de los ultimos meses.
+  ///
+  /// Es lo que el onboarding ofrece de entrada: un presupuesto sacado de lo
+  /// que uno ya gasta pesa mas que uno inventado, porque no hay que adivinar
+  /// cifras y la primera comparacion ya tiene sentido.
+  ///
+  /// Devuelve cuantas lineas escribio. Cero significa que no habia historial
+  /// suficiente, y entonces no se inventa nada.
+  Future<int> presupuestoDesdeHistorial({
+    required String periodo,
+    required String moneda,
+    int meses = 3,
+  }) async {
+    final periodos = <String>[];
+    var p = periodoAnterior(periodo);
+    for (var i = 0; i < meses; i++) {
+      periodos.add(p);
+      p = periodoAnterior(p);
+    }
+
+    final gastos = <String, double>{};
+    final vistos = <String, Set<String>>{};
+    for (final per in periodos) {
+      final movs = await dao.movimientos(
+        FiltroMovimientos(periodo: per, moneda: moneda),
+      );
+      for (final m in movs) {
+        final g = m.gasto;
+        if (g <= 0 || m.categoria.isEmpty) continue;
+        gastos[m.categoria] = (gastos[m.categoria] ?? 0) + g;
+        vistos.putIfAbsent(m.categoria, () => {}).add(per);
+      }
+    }
+    if (gastos.isEmpty) return 0;
+
+    final lineas = <LineaPresupuesto>[];
+    gastos.forEach((cat, total) {
+      // Se divide entre los meses en que esa categoria aparecio, no entre
+      // todos: una categoria que solo existe desde el mes pasado no deberia
+      // salir con un tercio de su gasto real.
+      final n = vistos[cat]?.length ?? 1;
+      final promedio = redondear(total / n);
+      if (promedio > 0) {
+        lineas.add(LineaPresupuesto(
+          periodo: periodo,
+          categoria: cat,
+          moneda: moneda,
+          monto: promedio,
+          notas: 'Sugerido con tus ultimos $n mes(es)',
+        ));
+      }
+    });
+
+    if (lineas.isEmpty) return 0;
+    await dao.guardarPresupuesto(periodo, moneda, lineas);
+    return lineas.length;
+  }
+
   // ==========================================================================
   //  SUSCRIPCIONES
   // ==========================================================================
