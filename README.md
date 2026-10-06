@@ -19,6 +19,7 @@ de ese codigo, que lleva meses probado contra correos reales del BCP.
 | **Clasifica solo** | 70 reglas de fabrica con comercios peruanos reales. Lo que corriges se vuelve regla. |
 | **Detecta suscripciones** | Cargos que se repiten cada mes con el mismo monto y cerca del mismo dia. |
 | **Presupuesto por categoria** | Con aviso cuando te acercas al limite. |
+| **Metas de ahorro** | Ahorro con nombre. Lo que aportas sale de tu ahorro del mes, no de un presupuesto. |
 | **Ingresos del regimen peruano** | Sueldo, quincena, gratificacion, CTS y el resto, a un toque desde el registro manual. |
 | **Patrimonio neto** | Liquidez, deuda e inversiones, en soles y dolares. |
 
@@ -48,7 +49,7 @@ de ese codigo, que lleva meses probado contra correos reales del BCP.
 ## Como correrlo
 
 Hace falta **Flutter 3.27 o mas nuevo**. Verificado contra Flutter 3.47.3 y
-Dart 3.13.3: `flutter analyze` sin observaciones, **75 pruebas en verde** y APK
+Dart 3.13.3: `flutter analyze` sin observaciones, **85 pruebas en verde** y APK
 de release compilado (55.5 MB, arm64-v8a + armeabi-v7a + x86_64).
 
 Las carpetas `android/` e `ios/` estan en `.gitignore` porque las genera la
@@ -220,8 +221,8 @@ lib/
 │   ├── fx/          tipo de cambio USD/PEN
 │   ├── db/          esquema SQLite y catalogo de fabrica
 │   └── repos/       acceso a datos y vistas para la interfaz
-├── features/        las 8 pantallas
-└── widgets/         tarjetas, fichas, dona y barras (dibujadas a mano)
+├── features/        las pantallas, una carpeta por seccion
+└── widgets/         marca, tarjetas, fichas, dona y barras (dibujadas a mano)
 ```
 
 Las tres carpetas con ★ son el corazon. Todo lo demas se puede rehacer; eso no.
@@ -251,6 +252,34 @@ Cuando un mes tiene pocos correos, el Dashboard te lo dice en vez de mostrar un
 numero bonito y falso.
 
 ---
+
+## Las pantallas
+
+La barra inferior lleva cinco y el resto vive donde nace, como en el
+prototipo de Leep.
+
+| En la barra | |
+|---|---|
+| **Resumen** | Lo disponible del mes manda la portada, no el patrimonio. Debajo, lo que entro y lo que vas ahorrando. |
+| **Movimientos** | Historial, Tarjetas y Cuentas en tres pestanias. |
+| **Presupuesto** | Por categoria, con el estado en segunda persona: "te quedan" o "te pasaste por". |
+| **Metas** | Cada una con su anillo, su plazo y su aporte de un toque. |
+| **Invertir** | Posiciones y aportes. |
+
+| Donde nacen | |
+|---|---|
+| **Revisar** | Desde su aviso en el Resumen. |
+| **Registro manual** | Desde el boton flotante. Gasto en efectivo e ingreso, que son los dos agujeros que el correo no cubre. |
+| **Categorias, Suscripciones, Perfil, Accesibilidad, Fuentes de datos, Ajustes** | Desde el cajon lateral. |
+| **Onboarding** | La primera vez, y se puede saltar entero. |
+
+## Dos libros, uno por moneda
+
+Soles y dolares llevan cada uno sus movimientos, su presupuesto y sus metas.
+Nada se convierte para sumarse: un cargo de $20 se queda en $20 y no aparece
+como S/ 75 en el total del mes. Arriba se cambia de libro con el segmentado
+`S/ | $`. El tipo de cambio sigue ahi, pero solo para mostrar equivalencias y
+para el patrimonio, no para armar totales.
 
 ## Pruebas
 
@@ -287,3 +316,13 @@ Cubren lo que de verdad se puede romper sin que nadie se de cuenta:
 - **Exportar a CSV.**
 - **Dividir un movimiento** ya esta en el repositorio
   (`Repositorio.dividirMovimiento`) pero todavia no tiene pantalla.
+- **El patrimonio no se parte por moneda.** Los movimientos, el presupuesto y
+  las metas si; el patrimonio sigue consolidando a soles. El prototipo dice que
+  cada moneda deberia llevar su propio portafolio, pero eso toca la tabla
+  `patrimonio` y va aparte.
+- **Ingles.** El prototipo trae su diccionario en `quipu-i18n.js`, pero los
+  textos de la app estan escritos en el codigo y `main.dart` fija `es_PE`.
+  Hace falta sacarlos a ARB antes de poder cambiar de idioma.
+- **Las fuentes que el prototipo dibuja y no existen.** SBS, BCRP, SMV, BVL y
+  el valor cuota de AFP. La pantalla de Fuentes solo lista lo que de verdad se
+  consulta hoy.
