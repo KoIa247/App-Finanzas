@@ -5,6 +5,7 @@ import '../../core/texto.dart';
 import '../../domain/catalogo.dart';
 import '../../domain/enums.dart';
 import '../../domain/finanzas.dart';
+import '../../domain/meta.dart';
 import '../../domain/movimiento.dart';
 import '../db/base_datos.dart';
 
@@ -428,6 +429,87 @@ class Dao {
     final d = await _db;
     await d.insert('remitentes', r.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  // ==========================================================================
+  //  METAS
+  // ==========================================================================
+
+  /// Las metas de una moneda. Como el presupuesto, la moneda no es opcional:
+  /// cada libro lleva las suyas.
+  Future<List<Meta>> metas(String moneda, {bool incluirInactivas = false}) async {
+    final d = await _db;
+    final donde = <String>['moneda = ?'];
+    final args = <Object?>[moneda];
+    if (!incluirInactivas) donde.add('activa = 1');
+    final filas = await d.query(
+      'metas',
+      where: donde.join(' AND '),
+      whereArgs: args,
+      orderBy: 'orden, nombre',
+    );
+    return filas.map(Meta.fromMap).toList();
+  }
+
+  Future<void> guardarMeta(Meta m) async {
+    final d = await _db;
+    await d.insert(
+      'metas',
+      m.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Baja logica, como la de los movimientos: la meta deja de verse pero sus
+  /// aportes siguen ahi. Borrarla de verdad perderia el historial de un
+  /// ahorro que si ocurrio.
+  Future<void> archivarMeta(String id) async {
+    final d = await _db;
+    await d.update('metas', {'activa': 0},
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> aportarAMeta(AporteMeta a) async {
+    final d = await _db;
+    await d.insert('aportes_meta', a.toMap());
+  }
+
+  Future<void> borrarAporte(String id) async {
+    final d = await _db;
+    await d.delete('aportes_meta', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Lo aportado por meta, en total y en un periodo, de una sola pasada.
+  Future<({Map<String, double> total, Map<String, double> periodo})>
+      aportesPorMeta(String moneda, String periodo) async {
+    final d = await _db;
+    final filas = await d.rawQuery(
+      'SELECT meta_id, periodo, SUM(importe) AS suma '
+      'FROM aportes_meta WHERE moneda = ? GROUP BY meta_id, periodo',
+      [moneda],
+    );
+    final total = <String, double>{};
+    final delMes = <String, double>{};
+    for (final f in filas) {
+      final id = (f['meta_id'] ?? '') as String;
+      final suma = (f['suma'] as num?)?.toDouble() ?? 0;
+      total[id] = (total[id] ?? 0) + suma;
+      if (f['periodo'] == periodo) {
+        delMes[id] = (delMes[id] ?? 0) + suma;
+      }
+    }
+    return (total: total, periodo: delMes);
+  }
+
+  Future<List<AporteMeta>> aportesDe(String metaId) async {
+    final d = await _db;
+    final filas = await d.query(
+      'aportes_meta',
+      where: 'meta_id = ?',
+      whereArgs: [metaId],
+      orderBy: 'fecha DESC',
+    );
+    return filas.map(AporteMeta.fromMap).toList();
   }
 
   // ==========================================================================

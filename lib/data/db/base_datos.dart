@@ -17,7 +17,7 @@ class BaseDatos {
 
   static final BaseDatos instancia = BaseDatos._();
 
-  static const int _version = 5;
+  static const int _version = 6;
 
   Database? _db;
 
@@ -61,6 +61,7 @@ class BaseDatos {
     if (desde < 3) await _v3ColoresDeLeep(d);
     if (desde < 4) await _v4OrdenDeAlimentacion(d);
     if (desde < 5) await _v5IngresosDeLeep(d);
+    if (desde < 6) await _v6Metas(d);
   }
 
   /// v3: las categorias pasan a los colores de Leep.
@@ -106,6 +107,42 @@ class BaseDatos {
         whereArgs: ['Cafeteria', '#9E4420']);
 
     await b.commit(noResult: true);
+  }
+
+  /// v6: las metas de ahorro.
+  ///
+  /// Dos tablas y no una: el objetivo por un lado y cada aporte por otro. Con
+  /// un solo campo "ahorrado" no se puede decir cuanto pusiste este mes, que
+  /// es lo que la pantalla muestra arriba, y cualquier correccion borraria el
+  /// historial de como llegaste ahi.
+  Future<void> _v6Metas(Database d) async {
+    await d.execute('''
+      CREATE TABLE IF NOT EXISTS metas (
+        id              TEXT PRIMARY KEY,
+        nombre          TEXT NOT NULL,
+        objetivo        REAL NOT NULL DEFAULT 0,
+        moneda          TEXT NOT NULL DEFAULT 'PEN',
+        fecha_limite    TEXT DEFAULT '',
+        aporte_sugerido REAL DEFAULT 0,
+        icono           TEXT DEFAULT '',
+        color           TEXT DEFAULT '#1E5A37',
+        activa          INTEGER DEFAULT 1,
+        orden           INTEGER DEFAULT 999,
+        notas           TEXT DEFAULT '',
+        fecha_creacion  TEXT DEFAULT ''
+      )
+    ''');
+    await d.execute('''
+      CREATE TABLE IF NOT EXISTS aportes_meta (
+        id       TEXT PRIMARY KEY,
+        meta_id  TEXT NOT NULL,
+        fecha    TEXT NOT NULL,
+        periodo  TEXT NOT NULL,
+        importe  REAL NOT NULL DEFAULT 0,
+        moneda   TEXT NOT NULL DEFAULT 'PEN',
+        notas    TEXT DEFAULT ''
+      )
+    ''');
   }
 
   /// v5: las subcategorias de ingreso que el registro manual necesita.
@@ -319,6 +356,35 @@ class BaseDatos {
     ''');
 
     b.execute('''
+      CREATE TABLE metas (
+        id              TEXT PRIMARY KEY,
+        nombre          TEXT NOT NULL,
+        objetivo        REAL NOT NULL DEFAULT 0,
+        moneda          TEXT NOT NULL DEFAULT 'PEN',
+        fecha_limite    TEXT DEFAULT '',
+        aporte_sugerido REAL DEFAULT 0,
+        icono           TEXT DEFAULT '',
+        color           TEXT DEFAULT '#1E5A37',
+        activa          INTEGER DEFAULT 1,
+        orden           INTEGER DEFAULT 999,
+        notas           TEXT DEFAULT '',
+        fecha_creacion  TEXT DEFAULT ''
+      )
+    ''');
+
+    b.execute('''
+      CREATE TABLE aportes_meta (
+        id       TEXT PRIMARY KEY,
+        meta_id  TEXT NOT NULL,
+        fecha    TEXT NOT NULL,
+        periodo  TEXT NOT NULL,
+        importe  REAL NOT NULL DEFAULT 0,
+        moneda   TEXT NOT NULL DEFAULT 'PEN',
+        notas    TEXT DEFAULT ''
+      )
+    ''');
+
+    b.execute('''
       CREATE TABLE inversiones (
         id              TEXT PRIMARY KEY,
         fecha           TEXT NOT NULL,
@@ -452,7 +518,8 @@ class BaseDatos {
     final d = await db;
     final tablas = [
       'movimientos', 'cuentas', 'categorias', 'reglas', 'remitentes',
-      'presupuesto', 'inversiones', 'activos', 'plantillas_ingreso',
+      'presupuesto', 'metas', 'aportes_meta', 'inversiones', 'activos',
+      'plantillas_ingreso',
       'patrimonio', 'tipo_cambio', 'config', 'log',
     ];
     final b = d.batch();

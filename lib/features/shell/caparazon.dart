@@ -8,6 +8,7 @@ import '../ajustes/pantalla_ajustes.dart';
 import '../cuentas/pantalla_cuentas.dart';
 import '../dashboard/pantalla_dashboard.dart';
 import '../inversiones/pantalla_inversiones.dart';
+import '../metas/pantalla_metas.dart';
 import '../movimientos/pantalla_movimientos.dart';
 import '../presupuesto/pantalla_presupuesto.dart';
 import '../revision/pantalla_revision.dart';
@@ -19,6 +20,7 @@ enum Seccion {
   dashboard('Resumen', Icons.dashboard_outlined, Icons.dashboard),
   movimientos('Movimientos', Icons.receipt_long_outlined, Icons.receipt_long),
   presupuesto('Presupuesto', Icons.pie_chart_outline, Icons.pie_chart),
+  metas('Metas', Icons.flag_outlined, Icons.flag),
   revision('Revisar', Icons.rule_outlined, Icons.rule),
   cuentas('Cuentas', Icons.account_balance_outlined, Icons.account_balance),
   inversiones('Inversiones', Icons.trending_up_outlined, Icons.trending_up),
@@ -34,6 +36,7 @@ enum Seccion {
         Seccion.dashboard => const PantallaDashboard(),
         Seccion.movimientos => const PantallaMovimientos(),
         Seccion.presupuesto => const PantallaPresupuesto(),
+        Seccion.metas => const PantallaMetas(),
         Seccion.revision => const PantallaRevision(),
         Seccion.cuentas => const PantallaCuentas(),
         Seccion.inversiones => const PantallaInversiones(),
@@ -44,12 +47,13 @@ enum Seccion {
 /// Las que van en la barra inferior del telefono.
 ///
 /// El prototipo baja de ocho secciones planas a cinco en la barra, y manda el
-/// resto a donde nacen: Revisar se entra desde el aviso del Resumen, no desde
-/// una pestania. Falta Metas, que todavia no existe.
+/// resto a donde nacen: Revisar se entra desde el aviso del Resumen, Cuentas y
+/// Ajustes desde el cajon.
 const List<Seccion> _barra = [
   Seccion.dashboard,
   Seccion.movimientos,
   Seccion.presupuesto,
+  Seccion.metas,
   Seccion.inversiones,
 ];
 

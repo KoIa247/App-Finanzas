@@ -14,6 +14,7 @@ import '../data/repos/vistas.dart';
 import '../domain/catalogo.dart';
 import '../domain/enums.dart';
 import '../domain/finanzas.dart';
+import '../domain/meta.dart';
 import '../domain/movimiento.dart';
 
 // ============================================================================
@@ -259,6 +260,14 @@ final ingresosDelMesProvider = FutureProvider<List<Movimiento>>((ref) {
           moneda: ref.watch(monedaProvider),
           tipo: TipoMovimiento.ingreso,
         ),
+      );
+});
+
+final metasProvider = FutureProvider<List<AvanceMeta>>((ref) {
+  ref.watch(revisionProvider);
+  return ref.watch(repositorioProvider).avancesMetas(
+        ref.watch(periodoProvider),
+        ref.watch(monedaProvider),
       );
 });
 

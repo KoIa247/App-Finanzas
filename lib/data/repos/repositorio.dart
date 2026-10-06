@@ -4,6 +4,7 @@ import '../../core/texto.dart';
 import '../../domain/catalogo.dart';
 import '../../domain/enums.dart';
 import '../../domain/finanzas.dart';
+import '../../domain/meta.dart';
 import '../../domain/movimiento.dart';
 import '../clasificador/motor_reglas.dart';
 import '../clasificador/suscripciones.dart';
@@ -266,6 +267,75 @@ class Repositorio {
       tipoCambio: tc,
       notas: foto.notas,
     );
+  }
+
+  // ==========================================================================
+  //  METAS
+  // ==========================================================================
+
+  /// Las metas de un libro con sus cuentas hechas.
+  Future<List<AvanceMeta>> avancesMetas(String periodo, String moneda) async {
+    final metas = await dao.metas(moneda);
+    if (metas.isEmpty) return const [];
+    final aportes = await dao.aportesPorMeta(moneda, periodo);
+
+    final out = metas
+        .map((m) => AvanceMeta(
+              meta: m,
+              ahorrado: redondear(aportes.total[m.id] ?? 0),
+              aportadoEnPeriodo: redondear(aportes.periodo[m.id] ?? 0),
+            ))
+        .toList();
+
+    // Las cumplidas bajan: lo que importa es lo que todavia falta.
+    out.sort((a, b) {
+      if (a.cumplida != b.cumplida) return a.cumplida ? 1 : -1;
+      return a.meta.orden.compareTo(b.meta.orden);
+    });
+    return out;
+  }
+
+  /// Anota un aporte. No toca el presupuesto: sale del ahorro del mes.
+  Future<void> aportarAMeta({
+    required String metaId,
+    required double importe,
+    required String moneda,
+    String? fecha,
+    String notas = '',
+  }) async {
+    final f = fecha ?? hoyLima();
+    await dao.aportarAMeta(AporteMeta(
+      id: 'ap_${DateTime.now().microsecondsSinceEpoch}',
+      metaId: metaId,
+      fecha: f,
+      importe: redondear(importe),
+      moneda: moneda,
+      notas: notas,
+    ));
+  }
+
+  Future<Meta> crearMeta({
+    required String nombre,
+    required double objetivo,
+    required String moneda,
+    String fechaLimite = '',
+    double aporteSugerido = 0,
+    String icono = '',
+    String color = '#1E5A37',
+  }) async {
+    final m = Meta(
+      id: 'meta_${DateTime.now().microsecondsSinceEpoch}',
+      nombre: nombre.trim(),
+      objetivo: redondear(objetivo),
+      moneda: moneda,
+      fechaLimite: fechaLimite,
+      aporteSugerido: redondear(aporteSugerido),
+      icono: icono,
+      color: color,
+      fechaCreacion: hoyLima(),
+    );
+    await dao.guardarMeta(m);
+    return m;
   }
 
   // ==========================================================================
