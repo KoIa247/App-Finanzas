@@ -6,6 +6,7 @@ import '../../core/tema.dart';
 import '../../domain/finanzas.dart';
 import '../../providers.dart';
 import '../../widgets/async.dart';
+import '../../widgets/animaciones.dart';
 import '../../widgets/comunes.dart';
 
 /// Suscripciones detectadas.
@@ -42,7 +43,7 @@ class PantallaSuscripciones extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
           children: [
-            _Portada(activas),
+            EntradaPop(child: _Portada(activas)),
             const SizedBox(height: 16),
             if (activas.isNotEmpty) ...[
               Text('Activas', style: context.texto.titleMedium),

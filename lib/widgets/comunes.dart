@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/formato.dart';
 import '../core/tema.dart';
+import 'animaciones.dart';
 
 /// Tarjeta con titulo y accion opcional. Es el contenedor base de todo.
 class Bloque extends StatelessWidget {
@@ -274,6 +275,7 @@ class BarraAvance extends StatelessWidget {
     required this.valor,
     required this.color,
     this.alto = 8,
+    this.duracion = const Duration(milliseconds: 600),
   });
 
   /// 0 a 1. Por encima de 1 la barra se pinta en rojo y se recorta.
@@ -281,19 +283,36 @@ class BarraAvance extends StatelessWidget {
   final Color color;
   final double alto;
 
+  /// En el prototipo la portada tarda un poco mas que las filas: .7s contra
+  /// .6s. Es poco, pero hace que la cifra grande mande.
+  final Duration duracion;
+
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
     final excedido = valor > 1;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(alto),
-      child: LinearProgressIndicator(
-        value: valor.clamp(0.0, 1.0),
-        minHeight: alto,
-        backgroundColor: t.superficie2,
-        valueColor:
-            AlwaysStoppedAnimation(excedido ? t.critico : color),
-      ),
+    final destino = valor.clamp(0.0, 1.0);
+    final relleno = excedido ? t.critico : color;
+
+    Widget barra(double v) => ClipRRect(
+          borderRadius: BorderRadius.circular(alto),
+          child: LinearProgressIndicator(
+            value: v,
+            minHeight: alto,
+            backgroundColor: t.superficie2,
+            valueColor: AlwaysStoppedAnimation(relleno),
+          ),
+        );
+
+    // El `grow` del prototipo: la barra se llena desde cero. Se anima el
+    // relleno y no el ancho del widget, que arrastraria tambien el carril.
+    if (MediaQuery.disableAnimationsOf(context)) return barra(destino);
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: destino),
+      duration: duracion,
+      curve: curvaLeep,
+      builder: (context, v, _) => barra(v),
     );
   }
 }

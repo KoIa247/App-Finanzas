@@ -10,6 +10,7 @@ import '../../core/tema.dart';
 import '../../domain/meta.dart';
 import '../../providers.dart';
 import '../../widgets/async.dart';
+import '../../widgets/animaciones.dart';
 import '../../widgets/comunes.dart';
 
 /// Metas de ahorro.
@@ -31,7 +32,7 @@ class PantallaMetas extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
           children: [
-            _Portada(metas),
+            EntradaPop(child: _Portada(metas)),
             const SizedBox(height: 14),
             for (final a in metas) ...[
               _FichaMeta(a),
@@ -277,14 +278,30 @@ class _Anillo extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          CustomPaint(
-            size: const Size(54, 54),
-            painter: _PintorAnillo(
-              valor: valor,
-              color: color,
-              fondo: t.superficie2,
+          if (MediaQuery.disableAnimationsOf(context))
+            CustomPaint(
+              size: const Size(54, 54),
+              painter: _PintorAnillo(
+                valor: valor,
+                color: color,
+                fondo: t.superficie2,
+              ),
+            )
+          else
+            // El anillo tambien se llena desde cero, como las barras.
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: valor),
+              duration: const Duration(milliseconds: 700),
+              curve: curvaLeep,
+              builder: (context, v, _) => CustomPaint(
+                size: const Size(54, 54),
+                painter: _PintorAnillo(
+                  valor: v,
+                  color: color,
+                  fondo: t.superficie2,
+                ),
+              ),
             ),
-          ),
           Text(
             '${(valor * 100).round()}%',
             style: context.texto.labelSmall?.copyWith(

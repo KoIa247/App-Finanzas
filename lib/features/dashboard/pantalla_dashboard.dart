@@ -8,6 +8,7 @@ import '../../data/repos/vistas.dart';
 import '../../domain/finanzas.dart';
 import '../../providers.dart';
 import '../../widgets/async.dart';
+import '../../widgets/animaciones.dart';
 import '../../widgets/comunes.dart';
 import '../../widgets/graficos.dart';
 import '../movimientos/ficha_movimiento.dart';
@@ -48,10 +49,13 @@ class _Contenido extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Portada(d),
+        EntradaPop(child: _Portada(d)),
 
         const SizedBox(height: 18),
-        _EntradasYAhorro(d),
+        EntradaPop(
+          retraso: const Duration(milliseconds: 60),
+          child: _EntradasYAhorro(d),
+        ),
 
         if (d.pendientes > 0) ...[
           const SizedBox(height: 14),
@@ -450,16 +454,27 @@ class _BarraGasto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radioPastilla),
-      child: LinearProgressIndicator(
-        value: consumo,
-        minHeight: 8,
-        backgroundColor: t.portadaTinta.withValues(alpha: 0.18),
-        valueColor: AlwaysStoppedAnimation(
-          pasado ? t.critico : t.portadaTinta.withValues(alpha: 0.92),
-        ),
-      ),
+    final relleno =
+        pasado ? t.critico : t.portadaTinta.withValues(alpha: 0.92);
+
+    Widget barra(double v) => ClipRRect(
+          borderRadius: BorderRadius.circular(radioPastilla),
+          child: LinearProgressIndicator(
+            value: v,
+            minHeight: 8,
+            backgroundColor: t.portadaTinta.withValues(alpha: 0.18),
+            valueColor: AlwaysStoppedAnimation(relleno),
+          ),
+        );
+
+    if (MediaQuery.disableAnimationsOf(context)) return barra(consumo);
+
+    // .7s: el prototipo le da a la portada un poco mas que a las filas.
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: consumo),
+      duration: const Duration(milliseconds: 700),
+      curve: curvaLeep,
+      builder: (context, v, _) => barra(v),
     );
   }
 }
