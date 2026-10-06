@@ -96,6 +96,40 @@ class MonedaNotifier extends Notifier<String> {
   void alternar() => state = state == 'PEN' ? 'USD' : 'PEN';
 }
 
+/// Cuanto agranda el usuario la interfaz.
+///
+/// Multiplica a lo que ya pida el telefono, no lo reemplaza: quien ya tiene
+/// el sistema en letra grande no deberia tener que configurarlo dos veces.
+final escalaProvider =
+    NotifierProvider<EscalaNotifier, double>(EscalaNotifier.new);
+
+class EscalaNotifier extends Notifier<double> {
+  static const _clave = 'escala_texto';
+
+  /// Hasta 1.6: pasado eso los tableros de cifras dejan de caber y la app se
+  /// vuelve menos legible, no mas.
+  static const minimo = 0.9;
+  static const maximo = 1.6;
+
+  @override
+  double build() {
+    _cargar();
+    return 1;
+  }
+
+  Future<void> _cargar() async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getDouble(_clave);
+    if (v != null) state = v.clamp(minimo, maximo);
+  }
+
+  Future<void> cambiar(double v) async {
+    state = v.clamp(minimo, maximo);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_clave, state);
+  }
+}
+
 final temaProvider = NotifierProvider<TemaNotifier, ThemeMode>(TemaNotifier.new);
 
 class TemaNotifier extends Notifier<ThemeMode> {

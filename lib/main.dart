@@ -41,11 +41,15 @@ class AppFinanzas extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, child) {
-        // Un usuario con la letra muy grande no deberia romper los tableros.
+        // Lo que pide el telefono por su cuenta, multiplicado por lo que el
+        // usuario haya elegido en Accesibilidad. El tope sigue existiendo
+        // para que los tableros de cifras no se rompan.
         final mq = MediaQuery.of(context);
+        final delTelefono = mq.textScaler.clamp(maxScaleFactor: 1.35).scale(1);
         return MediaQuery(
           data: mq.copyWith(
-            textScaler: mq.textScaler.clamp(maxScaleFactor: 1.35),
+            textScaler:
+                TextScaler.linear(delTelefono * ref.watch(escalaProvider)),
           ),
           child: child!,
         );

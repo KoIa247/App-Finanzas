@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/fechas.dart';
 import '../../core/tema.dart';
 import '../../providers.dart';
+import '../ajustes/pantalla_accesibilidad.dart';
+import '../ajustes/pantalla_perfil.dart';
 import '../ajustes/pantalla_ajustes.dart';
 import '../cuentas/pantalla_cuentas.dart';
 import '../dashboard/pantalla_dashboard.dart';
 import '../inversiones/pantalla_inversiones.dart';
+import '../categorias/pantalla_categorias.dart';
 import '../metas/pantalla_metas.dart';
 import '../movimientos/pantalla_movimientos.dart';
 import '../presupuesto/pantalla_presupuesto.dart';
@@ -23,6 +26,9 @@ enum Seccion {
   metas('Metas', Icons.flag_outlined, Icons.flag),
   revision('Revisar', Icons.rule_outlined, Icons.rule),
   cuentas('Cuentas', Icons.account_balance_outlined, Icons.account_balance),
+  categorias('Categorias', Icons.label_outline, Icons.label),
+  accesibilidad('Accesibilidad', Icons.accessibility_new_outlined, Icons.accessibility_new),
+  perfil('Perfil', Icons.person_outline, Icons.person),
   inversiones('Inversiones', Icons.trending_up_outlined, Icons.trending_up),
   ajustes('Ajustes', Icons.settings_outlined, Icons.settings);
 
@@ -39,6 +45,9 @@ enum Seccion {
         Seccion.metas => const PantallaMetas(),
         Seccion.revision => const PantallaRevision(),
         Seccion.cuentas => const PantallaCuentas(),
+        Seccion.categorias => const PantallaCategorias(),
+        Seccion.accesibilidad => const PantallaAccesibilidad(),
+        Seccion.perfil => const PantallaPerfil(),
         Seccion.inversiones => const PantallaInversiones(),
         Seccion.ajustes => const PantallaAjustes(),
       };
