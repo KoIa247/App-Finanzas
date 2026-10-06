@@ -297,6 +297,11 @@ final ingresosDelMesProvider = FutureProvider<List<Movimiento>>((ref) {
       );
 });
 
+final suscripcionesProvider = FutureProvider<List<Suscripcion>>((ref) {
+  ref.watch(revisionProvider);
+  return ref.watch(repositorioProvider).suscripciones(ref.watch(monedaProvider));
+});
+
 final metasProvider = FutureProvider<List<AvanceMeta>>((ref) {
   ref.watch(revisionProvider);
   return ref.watch(repositorioProvider).avancesMetas(

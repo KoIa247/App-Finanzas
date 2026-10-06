@@ -270,6 +270,48 @@ class Repositorio {
   }
 
   // ==========================================================================
+  //  SUSCRIPCIONES
+  // ==========================================================================
+
+  /// Las suscripciones detectadas en un libro.
+  ///
+  /// No se guardan en ninguna tabla: salen de mirar el historial cada vez. Un
+  /// cargo que se repite cada mes con el mismo monto y cerca del mismo dia es
+  /// una suscripcion aunque nadie la haya declarado, y si deja de repetirse
+  /// deja de serlo sola.
+  Future<List<Suscripcion>> suscripciones(String moneda) async {
+    final config = await dao.config();
+    final movs = await dao.movimientos(FiltroMovimientos(moneda: moneda));
+    return detectarSuscripciones(
+      movs,
+      forzadas: _lista(config['suscripciones_si']),
+      excluidas: _lista(config['suscripciones_no']),
+    );
+  }
+
+  /// Marca un comercio como suscripcion o como algo que no lo es.
+  ///
+  /// Se guarda en config y no en el movimiento: la decision es sobre el
+  /// comercio entero, no sobre el cargo de un mes.
+  Future<void> marcarSuscripcion(String comercio, {required bool esta}) async {
+    final config = await dao.config();
+    final si = _lista(config['suscripciones_si']).toSet();
+    final no = _lista(config['suscripciones_no']).toSet();
+    final c = comercio.trim();
+    if (c.isEmpty) return;
+
+    if (esta) {
+      si.add(c);
+      no.remove(c);
+    } else {
+      no.add(c);
+      si.remove(c);
+    }
+    await dao.guardarConfig('suscripciones_si', si.join(','));
+    await dao.guardarConfig('suscripciones_no', no.join(','));
+  }
+
+  // ==========================================================================
   //  METAS
   // ==========================================================================
 

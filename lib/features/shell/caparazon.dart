@@ -14,6 +14,7 @@ import '../categorias/pantalla_categorias.dart';
 import '../metas/pantalla_metas.dart';
 import '../movimientos/pantalla_movimientos.dart';
 import '../presupuesto/pantalla_presupuesto.dart';
+import '../suscripciones/pantalla_suscripciones.dart';
 import '../revision/pantalla_revision.dart';
 import 'registro_manual.dart';
 
@@ -27,6 +28,7 @@ enum Seccion {
   revision('Revisar', Icons.rule_outlined, Icons.rule),
   cuentas('Cuentas', Icons.account_balance_outlined, Icons.account_balance),
   categorias('Categorias', Icons.label_outline, Icons.label),
+  suscripciones('Suscripciones', Icons.autorenew_outlined, Icons.autorenew),
   accesibilidad('Accesibilidad', Icons.accessibility_new_outlined, Icons.accessibility_new),
   perfil('Perfil', Icons.person_outline, Icons.person),
   inversiones('Inversiones', Icons.trending_up_outlined, Icons.trending_up),
@@ -46,6 +48,7 @@ enum Seccion {
         Seccion.revision => const PantallaRevision(),
         Seccion.cuentas => const PantallaCuentas(),
         Seccion.categorias => const PantallaCategorias(),
+        Seccion.suscripciones => const PantallaSuscripciones(),
         Seccion.accesibilidad => const PantallaAccesibilidad(),
         Seccion.perfil => const PantallaPerfil(),
         Seccion.inversiones => const PantallaInversiones(),
@@ -89,6 +92,14 @@ class Caparazon extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 12,
+        leading: _barra.contains(seccion)
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Volver al resumen',
+                onPressed: () =>
+                    ref.read(seccionProvider.notifier).ir(Seccion.dashboard),
+              ),
         // El titulo se encoge antes que cortarse: con el segmentado de moneda
         // y el mes al lado, "Presupuesto" no entra a tamanio completo y
         // quedaba en "Presupues".
@@ -129,11 +140,14 @@ class Caparazon extends ConsumerWidget {
               foregroundColor: t.marcaTinta,
             )
           : null,
-      bottomNavigationBar: esAncho
+      // Las secciones que no estan en la barra son pantallas a las que se
+      // entra, no pestanias: en el prototipo llevan flecha de volver y no
+      // barra. Ademas NavigationBar no sabe mostrarse sin nada elegido, asi
+      // que dejarla encendida obligaba a marcar Resumen estando en otra.
+      bottomNavigationBar: esAncho || !_barra.contains(seccion)
           ? null
           : NavigationBar(
-              selectedIndex:
-                  _barra.contains(seccion) ? _barra.indexOf(seccion) : 0,
+              selectedIndex: _barra.indexOf(seccion),
               onDestinationSelected: (i) =>
                   ref.read(seccionProvider.notifier).ir(_barra[i]),
               destinations: [
