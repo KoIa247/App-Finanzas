@@ -39,6 +39,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  assets:
+    # La rana de Leep. Es una silueta con alfa: se pinta con el color que
+    # toque en cada tema, no trae color propio.
+    - assets/marca/
+
   fonts:
     # Empaquetadas a proposito. La app funciona sin internet, asi que no puede
     # depender de que Google Fonts responda para dibujar un monto.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'comunes.dart';
+import 'marca.dart';
 
 /// Pinta carga, error y contenido sin repetir el mismo `when` en cada pantalla.
 extension VistaAsincrona<T> on AsyncValue<T> {
@@ -14,7 +15,7 @@ extension VistaAsincrona<T> on AsyncValue<T> {
       data: constructor,
       loading: () => SizedBox(
         height: altoCarga,
-        child: const Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
+        child: const Center(child: RanaCargando(tamanio: 30)),
       ),
       error: (e, _) => Vacio(
         titulo: 'No se pudo cargar',

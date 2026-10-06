@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/fechas.dart';
 import '../../core/tema.dart';
 import '../../providers.dart';
+import '../../widgets/marca.dart';
 
 /// La clave de `config` que recuerda que ya pasaste por aqui.
 const String claveOnboarding = 'onboarding_hecho';
@@ -40,6 +41,8 @@ class _Estado extends ConsumerState<PantallaOnboarding> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(22, 28, 22, 32),
           children: [
+            const MarcaLeep(tamanio: 56),
+            const SizedBox(height: 16),
             Text(
               'Finanzas personales · Peru',
               style: context.texto.labelSmall?.copyWith(color: t.marca),
@@ -123,12 +126,7 @@ class _Estado extends ConsumerState<PantallaOnboarding> {
                   : OutlinedButton(
                       onPressed: _armando ? null : _armarPresupuesto,
                       child: _armando
-                          ? const SizedBox(
-                              width: 17,
-                              height: 17,
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2.2),
-                            )
+                          ? const RanaCargando(tamanio: 17)
                           : const Text('Armarlo con mi historial'),
                     ),
             ),

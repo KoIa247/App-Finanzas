@@ -6,6 +6,7 @@ import '../../core/tema.dart';
 import '../../providers.dart';
 import '../../widgets/async.dart';
 import '../../widgets/comunes.dart';
+import '../../widgets/marca.dart';
 
 /// Perfil.
 ///
@@ -226,14 +227,7 @@ class _EstadoFormulario extends ConsumerState<_Formulario> {
         FilledButton(
           onPressed: _guardando ? null : _guardar,
           child: _guardando
-              ? SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    color: t.marcaTinta,
-                  ),
-                )
+              ? RanaCargando(tamanio: 18, color: t.marcaTinta)
               : const Text('Guardar perfil'),
         ),
         const SizedBox(height: 14),

@@ -11,6 +11,7 @@ import '../ajustes/pantalla_ajustes.dart';
 import '../cuentas/pantalla_cuentas.dart';
 import '../dashboard/pantalla_dashboard.dart';
 import '../inversiones/pantalla_inversiones.dart';
+import '../../widgets/marca.dart';
 import '../categorias/pantalla_categorias.dart';
 import '../onboarding/pantalla_onboarding.dart';
 import '../metas/pantalla_metas.dart';
@@ -135,10 +136,19 @@ class _Caparazon extends ConsumerWidget {
         // El titulo se encoge antes que cortarse: con el segmentado de moneda
         // y el mes al lado, "Presupuesto" no entra a tamanio completo y
         // quedaba en "Presupues".
-        title: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(seccion.titulo, maxLines: 1, softWrap: false),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const MarcaLeep(tamanio: 22),
+            const SizedBox(width: 9),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(seccion.titulo, maxLines: 1, softWrap: false),
+              ),
+            ),
+          ],
         ),
         // El ojo no va aqui: en el prototipo cada seccion tiene el suyo, al
         // lado de las cifras que tapa. Uno global en la barra ademas no
@@ -247,14 +257,7 @@ class _Menu extends ConsumerWidget {
                       color: t.marca,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Text(
-                      'S/',
-                      style: TextStyle(
-                        color: t.marcaTinta,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 17,
-                      ),
-                    ),
+                    child: MarcaLeep(tamanio: 24, color: t.marcaTinta),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

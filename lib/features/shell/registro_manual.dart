@@ -6,6 +6,7 @@ import '../../core/formato.dart';
 import '../../core/tema.dart';
 import '../../domain/enums.dart';
 import '../../providers.dart';
+import '../../widgets/marca.dart';
 
 /// El registro manual: lo que el correo del banco no trae.
 ///
@@ -192,14 +193,7 @@ class _Estado extends ConsumerState<_RegistroManual> {
               FilledButton(
                 onPressed: _guardando ? null : _guardar,
                 child: _guardando
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: t.marcaTinta,
-                        ),
-                      )
+                    ? RanaCargando(tamanio: 18, color: t.marcaTinta)
                     : Text(_esIngreso ? 'Anotar ingreso' : 'Registrar'),
               ),
             ],
